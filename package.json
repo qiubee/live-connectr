@@ -1,0 +1,24 @@
+{
+  "name": "live-connectr",
+  "version": "0.1.0",
+  "description": "App using sockets for real-time data transfer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "socket",
+    "sockets"
+  ],
+  "author": "qiubee",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "socket.io": "^4.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
