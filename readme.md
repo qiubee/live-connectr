@@ -40,3 +40,15 @@ npm run dev
 * Chat with others
 * Play mini-games
 * Get live train information
+
+## NS API
+
+For travel information about current trains I use the [**NS API**](https://www.ns.nl/en/travel-information/ns-api).
+
+## Data Life Cycle Diagram
+
+A *Data Life Cycle Diagram* shows how data flows through an application. The following graph shows how the data is transferred from the API and the server to the user:
+
+## License
+
+[**GNU General Public License v3.0**](LICENSE)
