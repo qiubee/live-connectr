@@ -1,16 +1,25 @@
 {
-  "name": "live-connectr",
+  "name": "zugo",
   "version": "0.1.0",
-  "description": "App using sockets for real-time data transfer",
+  "description": "Travel app with live travel information, chat & mini-games",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qiubee/zugo.git"
+  },
   "keywords": [
     "socket",
-    "sockets"
+    "chat",
+    "mini-games"
   ],
+  "bugs": {
+    "url": "https://github.com/qiubee/zugo/issues"
+  },
+  "homepage": "https://github.com/qiubee/zugo#readme",
   "author": "qiubee",
   "license": "GPL-3.0",
   "dependencies": {
