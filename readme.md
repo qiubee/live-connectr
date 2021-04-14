@@ -10,14 +10,15 @@ Chat and play mini-games with others who are also taking the same train. Select 
 
 ## Dependencies
 
+* Vue.js
 * Express
 * Socket.io
 
-For other dependencies see [**`package.json`**](package.json)
+For dependencies on the server see [**`package.json`**](server/package.json)  (server) and for the client see [**`package.json`**](client/package.json) (client).
 
 ## Installation
 
-1. Clone the repository and navigate to the directory.
+1. Clone the repository and navigate to the directories.
 
 2. **Install dependencies:**
 
@@ -25,7 +26,7 @@ For other dependencies see [**`package.json`**](package.json)
 	npm install
 	```
 
-### Run application
+### Run server
 
 ```bash
 # To run the server
@@ -33,6 +34,19 @@ npm run start
 
 # To run the development environment
 npm run dev
+```
+
+### Run client
+
+```bash
+# To run client in the development environment
+npm run serve
+
+# To build client app
+npm run build
+
+# To lint files
+npm run lint
 ```
 
 ## Functionalities
