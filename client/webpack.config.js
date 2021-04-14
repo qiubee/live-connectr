@@ -62,12 +62,17 @@ module.exports = {
 			new CssMinimizerPlugin()
 		]
 	},
-	devtool: 'inline-source-map',
+	devtool: process.env.NODE_ENV === "production" ? 
+		false :
+		"inline-source-map",
 	devServer: {
 		hot: true,
 		stats: "minimal",
 		inline: true,
 		port: 5000,
+		contentBase: path.resolve(__dirname, "dist"),
+		publicPath: "/",
+		watchContentBase: true
 	},
 	resolve: {
 		alias: {
