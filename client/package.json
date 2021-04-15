@@ -4,11 +4,11 @@
 	"private": true,
 	"scripts": {
 		"preserve": "npm run lint",
-		"serve": "webpack serve --mode development",
+		"serve": "webpack serve --mode=development",
 		"prebuild": "del ./dist",
-		"watch": "webpack --watch --mode development",
+		"watch": "webpack --watch --mode=development",
 		"lint": "eslint \"src/*.js\" --fix --ignore-pattern node_modules/",
-		"build": "webpack --mode production"
+		"build": "webpack --mode=production"
 	},
 	"author": "qiubee",
 	"license": "GPL-3.0",
