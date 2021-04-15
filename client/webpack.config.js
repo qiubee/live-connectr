@@ -73,7 +73,9 @@ module.exports = {
 		port: 5000,
 		contentBase: path.resolve(__dirname, "dist"),
 		publicPath: "/",
-		watchContentBase: true
+		watchContentBase: true,
+		quiet: true,
+		clientLogLevel: "warn"
 	},
 	resolve: {
 		alias: {
