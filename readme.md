@@ -6,7 +6,7 @@ Chat & play mini-games with others travelling by train.
 
 Chat and play mini-games with others who are also taking the same train. Select the train you're taking and chat or play mini-games together. Get live information about delays and disruptions.
 
-![Concept sketch screens](concept/concept-sketch.png)
+![Concept sketch screens](images/concept-sketch.png)
 
 ## Dependencies
 
@@ -57,11 +57,13 @@ npm run lint
 
 ## NS API
 
-For travel information about current trains I use the [**NS API**](https://www.ns.nl/en/travel-information/ns-api).
+For travel information about current trains I use the [NS API](https://www.ns.nl/en/travel-information/ns-api).
 
 ## Data Life Cycle Diagram
 
-A *Data Life Cycle Diagram* shows how data flows through an application. The following graph shows how the data is transferred from the API and the server to the user:
+A *Data Life Cycle Diagram* shows how data flows through an application. The following graph shows how the data is transferred from the [NS API](#ns-api) and database to and from the server and from the server to the user:
+
+![Zugo data life cycle diagram](images/zugo-data-life-cycle.jpg)
 
 ## License
 
