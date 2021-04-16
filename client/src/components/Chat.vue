@@ -43,14 +43,26 @@ export default {
 		};
 	},
 	mounted() {
-		const form = document.querySelector(".chat_footer form");
+		const socket = this.socket;
+		const roomId = 1;
 
+		const form = document.querySelector(".chat_footer form");
+		const input = document.querySelector(".chat_footer form input");
 		form.addEventListener("submit", function (event) {
 			event.preventDefault();
+			socket.emit("add message", {
+				roomId: roomId,
+				user: "unknown",
+				message: input.value,
+				datetime: new Date().toLocaleString()
+			});
+			input.value = "";
 		});
-		
-		this.socket.on("messages", function (data) {
-			console.log(data);
+
+		socket.emit("messages", roomId);
+
+		socket.on("messages", function (messages) {
+			console.log(messages);
 		});
 	}
 };
