@@ -1,9 +1,12 @@
 <template>
-	<div id="nav">
-		<router-link to="/">Home</router-link> |
-		<router-link to="/about">About</router-link>
-	</div>
-	<router-view/>
+    <header>
+        <nav>
+            <router-link to="/">Home</router-link>
+            <router-link to="/over-zugo">Over Zugo</router-link>
+            <router-link to="/reis/1">Reis</router-link>
+        </nav>
+    </header>
+    <router-view/>
 </template>
 
 <style>
@@ -49,16 +52,20 @@ a {
 	text-decoration: none;
 }
 
-#nav {
+header nav {
 	padding: 30px;
 }
 
-#nav a {
+header nav a {
 	font-weight: bold;
 	color: #2c3e50;
 }
 
-#nav a.router-link-exact-active {
+header nav a:not(:last-child) {
+    margin-right: 0.5rem;
+}
+
+header nav a.router-link-exact-active {
 	color: #42b983;
 }
 </style>
