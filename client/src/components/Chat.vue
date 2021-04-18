@@ -8,12 +8,11 @@
 	</div>
 	<div class="chat_conversation" v-else>
 		<ul>
-			<ChatMessage v-for="message in messages"
-			:key="message.id"
+			<ChatMessage v-for="message, index in messages"
+			:key="index"
 			:user="message.user"
-			:message="message.content"
-			:date="message.datetime"
-			:socket="socket"
+			:message="message.message"
+			:datetime="message.datetime"
 			/>
 		</ul>
 	</div>
@@ -35,34 +34,58 @@ export default {
 		ChatMessage
 	},
 	props: {
-		socket: Object
+		socket: Object,
+		user: Object
 	},
 	data() {
 		return {
-			messages: []
+			messages: Array
 		};
 	},
 	mounted() {
 		const socket = this.socket;
+		const vm = this;
 		const roomId = 1;
+		const user = {
+			id: 1,
+			name: "Chantal"
+		};
 
 		const form = document.querySelector(".chat_footer form");
 		const input = document.querySelector(".chat_footer form input");
 		form.addEventListener("submit", function (event) {
 			event.preventDefault();
-			socket.emit("add message", {
+			if (input.value === "") {
+				return;
+			}
+			const message = {
 				roomId: roomId,
-				user: "unknown",
+				userId: user.id,
 				message: input.value,
-				datetime: new Date().toLocaleString()
-			});
+				datetime: new Date().toUTCString()
+			};
+			socket.emit("add message", message);
 			input.value = "";
 		});
 
-		socket.emit("messages", roomId);
-
 		socket.on("messages", function (messages) {
-			console.log(messages);
+			const sortedMessages = messages.map(function (message) {
+				message.datetime = new Date(message.datetime).toLocaleString();
+				if (message.user.id === user.id) {
+					message.user.sender = true;
+				}
+				return message;
+			}).sort(function (a, b) {
+				return new Date(b.datetime) < new Date(a.datetime);
+			});
+			vm.messages = sortedMessages;
+		});
+
+		socket.on("new message", function (message) {
+			if (message.user.id === user.id) {
+				message.user.sender = true;
+			}
+			vm.messages.push(message);
 		});
 	}
 };
