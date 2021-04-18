@@ -10,7 +10,7 @@ function addToDatabase(name, data) {
 }
 
 function readFromDatabase(name) {
-	console.log(currentDateTime() + `: Data loaded from: ${FOLDER}/${name}.json`);
+	console.log(currentDateTime() + `: Data collected from: ${FOLDER}/${name}.json`);
 	return readJSON(`${FOLDER}/` + name + ".json");
 }
 
@@ -19,8 +19,9 @@ function readFromDatabase(name) {
 
 function insertOne(name, data) {
 	const collection = readFromDatabase(name);
-	const newCollection = collection.push(data);
-	addToDatabase(name, newCollection);
+	data.id = collection.length + 1;
+	collection.push(data);
+	addToDatabase(name, collection);
 }
 
 function deleteOne(name, data) {
