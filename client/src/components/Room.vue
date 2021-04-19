@@ -1,9 +1,11 @@
 <template>
 	<main class="room">
-		<Chat v-if="joined" :socket="socket"/>
+		<div v-if="joined">
+			<Chat :socket="socket"/>
+		</div>
 		<form v-else action="">
 			<h1>Wat is je naam?</h1>
-			<p v-if="empty" class="empty_text_field">Voer eerst je naam in</p>
+			<span v-if="empty" class="empty_text_field">Voer eerst je naam in</span>
 			<input type="text">
 			<button @click="joinRoom()">Ga naar chat</button>
 		</form>
@@ -32,11 +34,9 @@ export default {
 	created() {
 		// const host = location.origin.replace(/^http/, "ws");
 		const socket = io("http://localhost:8000");
-		const room = this.room;
 
 		socket.on("connect", function () {
 			console.log("connected");
-			socket.emit("messages", room.id);
 		});
 
 		socket.on("disconnect", function () {
@@ -44,6 +44,15 @@ export default {
 		});
 
 		this.socket = socket;
+	},
+	watch: {
+		joined: function (newValue, oldValue) {
+			if (newValue === true) {
+				const socket = this.socket;
+				const room = this.room;
+				socket.emit("messages", room.id);
+			}
+		}
 	},
 	methods: {
 		joinRoom() {
