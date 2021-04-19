@@ -1,5 +1,7 @@
 const express = require("express");
 const http = require("http");
+const cors = require("cors");
+const router = require("./routes/router");
 const socket = require("./features/websockets");
 require("dotenv").config();
 
@@ -10,6 +12,7 @@ const PORT = process.env.PORT || 8000;
 
 // use public folder for static files
 app.use(express.static("public"))
+	.use("/", cors({origin: "http://localhost:5000"}), router)
 	.disable("x-powered-by");
 
 // socket implementation
