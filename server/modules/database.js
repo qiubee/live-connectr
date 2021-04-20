@@ -58,3 +58,4 @@ exports.deleteMany = deleteMany;
 exports.update = update;
 exports.getOne = getOne;
 exports.getMany = getMany;
+exports.getAll = readFromDatabase;
