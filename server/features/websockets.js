@@ -58,11 +58,11 @@ module.exports = function (server) {
 		});
 
 		socket.on("disconnect", function () {
-			console.log("client disconnected");
 			// remove client from clients list
 			clients.splice(clients.findIndex(function (client) {
 				return client.id === socket.id;
 			}, 1));
+			console.log("client disconnected", `(left: ${clients.length})`);
 		});
 	});
 };
