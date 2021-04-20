@@ -1,6 +1,5 @@
 const axios = require("axios");
-const sample = require("./sample.js");
-const { readJSON, writeToJSON } = require("../../modules/file");
+const db = require("../../modules/database");
 require("dotenv").config();
 
 const apiToken = process.env.NS_API_KEY;
@@ -13,7 +12,8 @@ function getJourneyInfo(req, res) {
 
 async function searchJourney(req, res) {
 	const query = req.query;
-	// const journeys = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips", {
+
+	// const apiResponse = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips", {
 	// 	params: query,
 	// 	headers: {
 	// 		"Authorization": `Primary-${apiToken}`,
@@ -21,23 +21,65 @@ async function searchJourney(req, res) {
 	// 	}
 	// });
 
-	sample.trips.map(function (journey) {
-		console.log(journey.legs[0].direction);
-		console.log(journey.legs[0].product.shortCategoryName);
-		console.log(journey.legs[0].product.operatorName);
-		console.log(journey.legs[0].destination.plannedDateTime);
-		journey.legs.map(function (route) {
-			console.log(route.stops);
-		});
-	});
+	// test sample
+	const apiResponse = {status: 200, data: db.getAll("testjourneys")};
 
+	if (apiResponse.status === 200) {
+		const data = apiResponse.data;
+	
+		const journeys = data.trips.map(function (journey) {
+			const uicCodes = journey.uid.split("|").filter(function (item) {
+				return /Station/g.test(item);
+			}).map(function (str) {
+				const [field, code] = str.split("=");
+				return {
+					[field]: code
+				};
+			}).reduce(function (arr, item) {
+				return Object.assign(arr, item);
+			}, {});
+		
+			return journey.legs.filter(function (route) {
+				return uicCodes.toStation === route.destination.uicCode && uicCodes.fromStation === route.origin.uicCode;
+			}).map(function (route) {
+				const stops = route.stops.filter(function (stop) {
+						return stop.name !== route.origin.name && stop.name !== route.destination.name;
+					}).flat().filter(function (stop) {
+					return !stop.passing && !stop.cancelled;
+				}).map(function (stop) {
+					return {
+						name: stop.name,
+						uicCode: stop.uicCode,
+						plannedArrival: stop.plannedArrivalDateTime,
+						track: stop.actualArrivalTrack
+					};
+				});
+			
+				return {
+					journeyId: route.product.number,
+					destination: route.direction,
+					departureTime: route.origin.plannedDateTime,
+					type: route.product.shortCategoryName,
+					operator: route.product.operatorName,
+					stops: stops
+				};
+			});
+		}).flat();
+
+		return res.json(journeys);
+	} else if (apiResponse.status === 400) {
+		return res.status(400).json({
+			status: 400,
+			message: "Bad Request"
+		});
+	}
 }
 
 function getTrainInfo(req, res) {
 }
 
 function getStations(req, res) {
-	const allStations = readJSON("data/stations.json");
+	const allStations = db.getAll("stations");
 	if (req.query) {
 		if (req.query.length === 1 && req.query.countryCode) {
 			const countryCode = req.query.countryCode;
