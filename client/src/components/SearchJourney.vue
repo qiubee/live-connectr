@@ -49,17 +49,25 @@ export default {
 		const form = document.querySelector(".search form");
 
 		form.addEventListener("submit", async function (event) {
-			const fromOrigin = form.elements.from.value;
-			const toDestination = form.elements.to.value;
+			const inputs = Array.from(form.children).filter(function (node) {
+				return node.control;
+			}).map(function (node) {
+				return { [node.control.name]: node.control.value };
+			}).reduce(function (arr, input) {
+				return Object.assign(arr, input);
+			}, {});
+
 			event.preventDefault();
-			if (!fromOrigin || !toDestination ) {
+			if (!inputs.from || !inputs.to ) {
 				return;
 			}
 			
-			// console.log(await fetchData("http://localhost:8000/api/v1/search", {
-			// 	fromStation: fromOrigin,
-			// 	toStation: toDestination
-			// }));
+			const journeyResults= await fetchData("http://localhost:8000/api/v1/search", {
+				fromStation: inputs.from,
+				toStation: inputs.to
+			});
+			console.log(journeyResults);
+			return false;
 		});
 		
 	},
@@ -67,12 +75,12 @@ export default {
 		async fetchData(url, params = null) {
 			try {
 				if (params) {
-					return await axios.get(url, { params: params });
+					return await (await axios.get(url, { params: params })).data;
 				} else {
-					return await axios.get(url);
+					return await (await axios.get(url)).data;
 				}
 			} catch (error) {
-				if (error.response.status === 404) {
+				if (error.response.status >= 400 && error.response.status < 500) {
 					console.error(error.response.status + " " + error.response.data.message);
 				} else {
 					console.error(error);
@@ -82,10 +90,7 @@ export default {
 		async giveSearchOptions(event) {
 			const node = event.target;
 			const input = node.value.replace(/[0-9<>`'"$!@#$%^&*()\]\\/[]/g, "");
-			const from = this.suggestOrigin;
-			const to = this.suggestDestination;
 			
-			console.log("origin: " + from, "destination: " + to);
 			if (input.length < 2) {
 				this.suggestions = [];
 			}
@@ -100,7 +105,7 @@ export default {
 			});
 
 			if (suggestions) {
-				this.suggestions = suggestions.data; 
+				this.suggestions = suggestions; 
 			}
 		},
 		showSuggestions(event) {
