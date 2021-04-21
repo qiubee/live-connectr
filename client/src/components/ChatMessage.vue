@@ -1,15 +1,13 @@
 <template>
-	<li>
-		<div class="message" :class="{sender: user.sender}">
-			<p>{{message}}</p>
-			<div>
-				<span v-if="!user.sender">{{user.name}}</span>
-				<span>
-					<time v-bind:datetime="datetime">{{timeString}}</time>
-				</span>
-			</div>
+	<div class="message" :class="{sender: user.sender}">
+		<p>{{message}}</p>
+		<div>
+			<span v-if="!user.sender">{{user.name}}</span>
+			<span>
+				<time v-bind:datetime="datetime">{{timeString}}</time>
+			</span>
 		</div>
-	</li>
+	</div>
 </template>
 
 <script>
