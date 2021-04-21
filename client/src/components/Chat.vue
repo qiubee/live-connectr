@@ -8,12 +8,14 @@
 	</div>
 	<div class="chat_conversation" v-else>
 		<ul>
-			<ChatMessage v-for="message, index in messages"
-			:key="index"
-			:user="message.user"
-			:message="message.message"
-			:datetime="message.datetime"
-			/>
+			<li v-for="message, index in messages" :key="index">
+				<ChatMessage
+				:key="index"
+				:user="message.user"
+				:message="message.message"
+				:datetime="message.datetime"
+				/>
+			</li>
 		</ul>
 	</div>
 	<div class="chat_footer">
