@@ -3,50 +3,64 @@
 		<h2>Waar ga jij heen vandaag?</h2>
 		<form action="">
 			<label><span>Van</span><input @input="giveSearchOptions" @focus="showSuggestions" @blur="hideSuggestions" type="text" name="from"></label>
-			<div v-if="suggestOrigin">
+			<div v-if="suggestOrigin" class="suggestions">
 				<ul>
-					<li v-for="option in suggestions">
+					<li v-for="option in suggestions" :key="option">
 						<span>{{option}}</span>
 					</li>
 				</ul>
 			</div>
 			<label><span>Naar</span><input @input="giveSearchOptions" @focus="showSuggestions" @blur="hideSuggestions" type="text" name="to"></label>
-			<div v-if="suggestDestination">
+			<div v-if="suggestDestination" class="suggestions">
 				<ul>
-					<li v-for="option in suggestions">
+					<li v-for="option in suggestions" :key="option">
 						<span>{{option}}</span>
 					</li>
 				</ul>
 			</div>
 			<button>Zoek reis</button>
 		</form>
-		<!-- <ul>
-			<JourneyResult v-for="journey, index in journeys"
-				:key="index"
-			/>
-		</ul> -->
+		<div v-if="journeys.length > 0" class="results">
+			<ul>
+				<li v-for="journey in journeys" :key="journey.id">
+					<Journey  @click="findRoom(journey.id)"
+						:id="journey.id"
+						:operator="journey.operator"
+						:destination="journey.destination"
+						:departure="journey.departureTime"
+						:stops="journey.stops"
+						:type="journey.type"
+					/>
+				</li>
+			</ul>
+		</div>
+		<div v-else-if="noJourneys" class="no_results">
+			<p>Reis niet gevonden.</p>
+		</div>
 	</div>
 </template>
 
 <script>
 import axios from "axios";
-import JourneyResult from "@/components/JourneyResult.vue";
+import Journey from "@/components/Journey.vue";
 export default {
 	name: "SearchJourney",
 	components: {
-		JourneyResult
+		Journey
 	},
 	data() {
 		return {
-			journeys: Array,
+			journeys: [],
+			noJourneys: false,
 			suggestions: Array,
 			suggestOrigin: false,
-			suggestDestination: false
+			suggestDestination: false,
 		};
 	},
 	mounted() {
 		const fetchData = this.fetchData;
 		const form = document.querySelector(".search form");
+		const vm = this;
 
 		form.addEventListener("submit", async function (event) {
 			const inputs = Array.from(form.children).filter(function (node) {
@@ -62,11 +76,16 @@ export default {
 				return;
 			}
 			
-			const journeyResults= await fetchData("http://localhost:8000/api/v1/search", {
+			const journeyResults = await fetchData("http://localhost:8000/api/v1/search", {
 				fromStation: inputs.from,
 				toStation: inputs.to
 			});
-			console.log(journeyResults);
+			if (journeyResults) {
+				vm.journeys = journeyResults;
+			} else {
+				vm.noJourneys = true;
+			}
+
 			return false;
 		});
 		
