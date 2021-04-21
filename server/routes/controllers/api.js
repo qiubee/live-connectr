@@ -22,7 +22,7 @@ async function searchJourney(req, res) {
 	// });
 
 	// test sample
-	const apiResponse = {status: 200, data: db.getAll("testjourneys")};
+	const apiResponse = {status: 200, data: db.getAll("testjourneys2")};
 
 	if (apiResponse.status === 200) {
 		const data = apiResponse.data;
@@ -54,23 +54,34 @@ async function searchJourney(req, res) {
 						track: stop.actualArrivalTrack
 					};
 				});
+
+				const type = {
+					name: route.product.shortCategoryName,
+					fullName: route.product.longCategoryName
+				};
 			
 				return {
-					journeyId: route.product.number,
+					id: Number(route.product.number),
 					destination: route.direction,
-					departureTime: route.origin.plannedDateTime,
-					type: route.product.shortCategoryName,
+					departureTime: route.origin.actualDateTime || route.origin.plannedDateTime,
+					type: type,
 					operator: route.product.operatorName,
 					stops: stops
 				};
 			});
-		}).flat();
-
+		}).flat().filter(function (journey, index) {
+			return index < 5;
+		});
 		return res.json(journeys);
 	} else if (apiResponse.status === 400) {
 		return res.status(400).json({
 			status: 400,
 			message: "Bad Request"
+		});
+	} else if (apiResponse.status === 404) {
+		return res.status(400).json({
+			status: 400,
+			message: "Journey not found"
 		});
 	}
 }
