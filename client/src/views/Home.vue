@@ -1,20 +1,21 @@
 <template>
 	<div class="home">
-		<SearchJourney/>
-		<Room/>
-		
+		<RoomList :socket="socket"/>
+		<SearchJourney :socket="socket"/>
 	</div>
 </template>
 
 <script>
-import Room from "@/components/Room.vue";
 import SearchJourney from "@/components/SearchJourney.vue";
-
+import RoomList from "@/components/RoomList.vue";
 
 export default {
 	name: "Home",
+	props: {
+		socket: Object
+	},
 	components: {
-		Room,
+		RoomList,
 		SearchJourney
 	}
 };
