@@ -1,11 +1,26 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/views/Home.vue";
+import io from "socket.io-client";
+
+// const host = location.origin.replace(/^http/, "ws");
+const socket = io("http://localhost:8000");
+
+socket.on("connect", function () {
+	console.log("connected");
+});
+
+socket.on("disconnect", function () {
+	console.log("disconnected");
+});
 
 const routes = [
 	{
 		path: "/",
 		name: "Home",
-		component: Home
+		component: Home,
+		props: {
+			socket: socket
+		}
 	}, {
 		path: "/over-zugo",
 		name: "Over",
@@ -16,7 +31,10 @@ const routes = [
 	}, {
 		path: "/reis/:id",
 		name: "Journey",
-		component: () => import(/* webpackChunkName: "journey" */ "../views/Journey.vue")
+		component: () => import(/* webpackChunkName: "journey" */ "../views/Journey.vue"),
+		props: {
+			socket: socket
+		}
 	}
 ];
 
