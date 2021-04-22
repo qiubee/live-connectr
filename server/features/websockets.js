@@ -1,4 +1,8 @@
 const db = require("../modules/database");
+const { watch } = require("fs");
+require("dotenv").config();
+
+const FOLDER = process.env.DB_FOLDER || "data";
 
 module.exports = function (server) {
 	const io = require("socket.io")(server, {
@@ -57,6 +61,20 @@ module.exports = function (server) {
 			socket.emit("messages", messages);
 		});
 
+		socket.on("all rooms", function (status) {
+			if (status.init) {
+				const rooms = collectRooms();
+				socket.emit("all rooms", rooms);
+			}
+
+			watch(FOLDER + "/rooms.json", function (event) {
+				if (event === "change") {
+					const rooms = collectRooms();
+					socket.emit("all rooms", rooms);
+				}
+			});
+		});
+
 		socket.on("disconnect", function () {
 			// remove client from clients list
 			clients.splice(clients.findIndex(function (client) {
@@ -66,3 +84,9 @@ module.exports = function (server) {
 		});
 	});
 };
+
+function collectRooms() {
+	const allRooms = db.getAll("rooms");
+	const allJourneys = db.getAll("journeys");
+	console.log(allRooms, allJourneys);
+}
