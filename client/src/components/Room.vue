@@ -14,7 +14,6 @@
 
 <script>
 import Chat from "@/components/Chat.vue";
-import io from "socket.io-client";
 
 export default {
 	name: "Room",
@@ -22,31 +21,17 @@ export default {
 		Chat
 	},
 	props: {
-		room: Object
+		room: Object,
+		socket: Object
 	},
 	data() {
 		return {
-			socket: Object,
 			joined: false,
 			empty: false
 		};
 	},
-	created() {
-		// const host = location.origin.replace(/^http/, "ws");
-		const socket = io("http://localhost:8000");
-
-		socket.on("connect", function () {
-			console.log("connected");
-		});
-
-		socket.on("disconnect", function () {
-			console.log("disconnected");
-		});
-
-		this.socket = socket;
-	},
 	watch: {
-		joined: function (newValue, oldValue) {
+		joined: function (newValue) {
 			if (newValue === true) {
 				const socket = this.socket;
 				const room = this.room;
