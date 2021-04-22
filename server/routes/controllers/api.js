@@ -22,7 +22,7 @@ async function searchJourney(req, res) {
 	// });
 
 	// test sample
-	const apiResponse = {status: 200, data: db.getAll("testjourneys2")};
+	const apiResponse = {status: 200, data: db.getAll("testjourneys3")};
 
 	if (apiResponse.status === 200) {
 		const data = apiResponse.data;
@@ -39,11 +39,13 @@ async function searchJourney(req, res) {
 				return Object.assign(arr, item);
 			}, {});
 		
-			return journey.legs.filter(function (route) {
-				return uicCodes.toStation === route.destination.uicCode && uicCodes.fromStation === route.origin.uicCode;
-			}).map(function (route) {
+			return journey.legs
+			.filter(function (route) {
+				return route.origin.actualDateTime;
+			})
+			.map(function (route) {
 				const stops = route.stops.filter(function (stop) {
-						return stop.name !== route.origin.name && stop.name !== route.destination.name;
+						return stop.uicCode !== uicCodes.fromStation && stop.uicCode !== uicCodes.toStation && stop.name !== route.direction;
 					}).flat().filter(function (stop) {
 					return !stop.passing && !stop.cancelled;
 				}).map(function (stop) {
@@ -71,6 +73,8 @@ async function searchJourney(req, res) {
 			});
 		}).flat().filter(function (journey, index) {
 			return index < 5;
+		}).sort(function (journey, nextJourney) {
+			return new Date(journey.departureTime) - new Date(nextJourney.departureTime);
 		});
 		return res.json(journeys);
 	} else if (apiResponse.status === 400) {
@@ -87,6 +91,64 @@ async function searchJourney(req, res) {
 }
 
 function getTrainInfo(req, res) {
+}
+
+function getRoom(req, res) {
+	const journeyId = Number(req.query.journeyId);
+	if (!journeyId || typeof journeyId !== "number") {
+		return res.status(400).json({
+			status: 400,
+			message: "Invalid parameter"
+		});
+	} 
+
+	const room = db.getOne("rooms", function (room) {
+		return room.journeyId === journeyId;
+	});
+
+	if (!room) {
+		return res.status(404).json({
+			status: 404,
+			message: "Room not found"
+		});
+	} else {
+		return res.json(room);
+	}
+}
+
+function getAllRooms(req, res) {
+	const allRooms = db.getAll("rooms");
+
+	if (!allRooms) {
+		return res.status(404).json({
+			status: 404,
+			message: "No rooms found"
+		});
+	} else {
+		return res.json(allRooms);
+	}
+}
+
+function addRoom(req, res) {
+	const journeyId = req.body.journeyId;
+	if (!journeyId && typeof journeyId !== "number") {
+		return res.status(400).json({
+			status: 400,
+			message: "Could not handle request due to incorrect data"
+		});
+	}
+	const totalRooms = db.getAll("rooms").length;
+	const newRoom = {
+		journeyId: journeyId,
+		chatId: totalRooms + 1,
+		users: [],
+		game: { active: false }
+	};
+	db.insertOne("rooms", newRoom);
+	return res.json({
+		status: 200,
+		message: "Room created"
+	});
 }
 
 function getStations(req, res) {
@@ -184,7 +246,10 @@ function filterRandom(arr, count) {
 	return Array.from(randomResults);
 }
 
-exports.journey = getJourneyInfo;
-exports.search = searchJourney;
-exports.train = getTrainInfo;
-exports.stations = getStations;
+exports.getJourneyInfo = getJourneyInfo;
+exports.getJourneys = searchJourney;
+exports.getTrainInfo = getTrainInfo;
+exports.getStations = getStations;
+exports.getRoom = getRoom;
+exports.getAllRooms = getAllRooms;
+exports.postRoom = addRoom;
