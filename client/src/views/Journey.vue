@@ -1,6 +1,6 @@
 <template>
-	<div class="home">
-		<Room/>
+	<div class="journey_live">
+		<Room :socket="socket"/>
 	</div>
 </template>
 
@@ -12,6 +12,9 @@ export default {
 	name: "Journey",
 	components: {
 		Room
+	},
+	props: {
+		socket: Object
 	}
 };
 </script>
