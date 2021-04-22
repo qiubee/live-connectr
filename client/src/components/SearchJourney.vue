@@ -20,10 +20,10 @@
 			</div>
 			<button>Zoek reis</button>
 		</form>
-		<div v-if="journeys.length > 0" class="results">
+		<div v-if="!noJourneys" class="results">
 			<ul>
-				<li v-for="journey in journeys" :key="journey.id">
-					<Journey  @click="findRoom(journey.id)"
+				<li class="result" v-for="journey in journeys" :key="journey.id">
+					<Journey  @click="toRoom(journey.id)"
 						:id="journey.id"
 						:operator="journey.operator"
 						:destination="journey.destination"
@@ -34,7 +34,7 @@
 				</li>
 			</ul>
 		</div>
-		<div v-else-if="noJourneys" class="no_results">
+		<div v-else class="no_results">
 			<p>Reis niet gevonden.</p>
 		</div>
 	</div>
@@ -76,7 +76,7 @@ export default {
 				return;
 			}
 			
-			const journeyResults = await fetchData("http://localhost:8000/api/v1/search", {
+			const journeyResults = await fetchData("http://localhost:8000/api/v1/journeys", {
 				fromStation: inputs.from,
 				toStation: inputs.to
 			});
@@ -143,6 +143,23 @@ export default {
 			} else if (inputName === "to") {
 				this.suggestDestination = false;
 			}
+		},
+		async toRoom(id) {
+			const room = await this.fetchData("http://localhost:8000/api/v1/room", {
+				journeyId: id
+			});
+
+			if (!room) {
+				const response = await axios.post("http://localhost:8000/api/v1/room", {
+					journeyId: id
+				});
+
+				if (response.status === 200) {
+					this.$router.push(`/reis/${id}`);
+				}
+			} else {
+				this.$router.push(`/reis/${id}`);
+			}
 		}
 	}
 };
@@ -174,5 +191,17 @@ export default {
 .search form button {
 	min-width: 8rem;
 	margin-top: 1rem;
+}
+
+.results .result {
+	max-width: 22.5rem;
+	background-color: white;
+	transition: all 0.15s ease;
+}
+
+.results .result:hover {
+	cursor: pointer;
+	transform: translateY(-0.25em);
+	filter: drop-shadow(0em 0.25em 0.25em rgba(3, 25, 53, 0.2));
 }
 </style>
