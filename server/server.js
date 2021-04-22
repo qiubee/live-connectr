@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 8000;
 
 // use public folder for static files
 app.use(express.static("public"))
+	.use(express.urlencoded({extended: true})) // get data from http body
+	.use(express.json())
 	.use("/", cors({origin: "http://localhost:5000"}), router)
 	.disable("x-powered-by");
 
