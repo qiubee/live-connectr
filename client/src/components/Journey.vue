@@ -4,15 +4,16 @@
 			<span class="destination">{{destination}}</span>
 			<div>
 				<div class="category">
-					<span class="type">{{type.name}}</span>
+					<span class="type" v-if="altTypeName">{{altTypeName}}</span>
+					<span class="type" v-else>{{type.name}}</span>
 					<span class="operator" :class="operator.toLowerCase()"></span>
 				</div>
 				<span class="departuretime">{{departureTime}}</span>
 			</div>
 		</div>
-		<div class="stops">
+		<div class="stops" v-if="mainStops.length > 0">
 			<span>Via: </span>
-			<ul v-if="mainStops">
+			<ul>
 				<li v-for="stop in mainStops" :key="stop.uicCode">
 					{{stop.name}}
 				</li>
@@ -36,30 +37,32 @@ export default {
 	data() {
 		return {
 			mainStops: Array,
-			departureTime: String
+			departureTime: String,
+			altTypeName: ""
 		};
 	},
 	created() {
 		const allStops = this.stops;
 		const departure = this.departure;
-		const journeyType = this.type.name;
+		const type = this.type;
 
-		if (journeyType === "IC") {
-			if (allStops.length > 2) {
-				const mainStops = allStops.filter(function (stop, index) {
-					return (index + 1) % 2 === 0;
+		if (type.name === "ICD") {
+			this.altTypeName = "IC Direct";
+		}
+
+		if (allStops.length > 2) {
+			const mainStops = allStops.filter(function (stop, index) {
+				return (index + 1) % 2 === 1;
+			});
+			if (mainStops.length > 5) {
+				this.mainStops = allStops.filter(function (stop, index) {
+					return index < 5;
 				});
-				console.log(mainStops);
-				if (mainStops.length > 5) {
-					this.mainStops = mainStops.filter(function (stop, index) {
-						return (index + 1) % 2 === 0;
-					});
-				} else {
-					this.mainStops = mainStops;
-				}
 			} else {
-				this.mainStops = allStops;
+				this.mainStops = mainStops;
 			}
+		} else {
+			this.mainStops = allStops;
 		}
 
 		this.departureTime = getTime(departure)
@@ -74,17 +77,11 @@ export default {
 .journey {
 	max-width: 22.5rem;
 	width: 100%;
-	height: 100%;
-	min-height: 6rem;
 	padding: 0.5rem 0.5rem;
 	margin: 1rem 0;
-	border: 0.15rem solid #2372cc;
+	border: 0.1rem solid #2372cc;
 	border-radius: 0.4rem;
 	background-color: white;
-}
-
-.journey:hover {
-	cursor: pointer;
 }
 
 .journey div:first-child, .journey div:first-child * div {
@@ -98,10 +95,6 @@ export default {
 	flex-direction: column;
 }
 
-.journey > div:first-child {
-	margin-bottom: 1em;
-}
-
 .journey .stops, .journey .stops ul {
 	display: flex;
 }
@@ -110,6 +103,7 @@ export default {
 	flex-direction: column;
 	color: #3d4246;
 	font-style: italic;
+	margin-top: 0.25em;
 }
 
 .journey .stops span {
@@ -141,7 +135,7 @@ export default {
 }
 
 .type {
-	text-transform: uppercase;
+	text-transform: capitalize;
 	font-style: italic;
 	font-weight: 600;
 	display: block;
