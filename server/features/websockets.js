@@ -88,5 +88,27 @@ module.exports = function (server) {
 function collectRooms() {
 	const allRooms = db.getAll("rooms");
 	const allJourneys = db.getAll("journeys");
-	console.log(allRooms, allJourneys);
+	const rooms = allRooms.map(function (room) {
+		const journey = allJourneys.find(function (journey) {
+			return journey.journeyId === room.journeyId;
+		});
+		
+		const stops = journey.stops.map(function (stop) {
+			return stop.name;
+		});
+
+		room.journey = {
+			destination: journey.destination.name,
+			stops: stops,
+			delayInSeconds: journey.delayInSeconds,
+			journeyId: journey.journeyId,
+			cancelled: journey.cancelled
+		};
+		
+		delete room.journeyId;
+		delete room.chatId;
+		delete room.created;
+		return room;
+	});
+	return rooms;
 }
