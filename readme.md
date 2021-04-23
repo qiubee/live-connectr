@@ -2,6 +2,8 @@
 
 Chat & play mini-games with others travelling by train.
 
+[**Go to demo >**](https://zu-go.herokuapp.com/)
+
 ## Concept
 
 Chat and play mini-games with others who are also taking the same train. Select the train you're taking and chat or play mini-games together. Get live information about delays and disruptions.
