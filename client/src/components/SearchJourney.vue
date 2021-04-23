@@ -43,6 +43,8 @@
 <script>
 import axios from "axios";
 import Journey from "@/components/Journey.vue";
+const host = location.origin.replace("5000", "8000");
+
 export default {
 	name: "SearchJourney",
 	components: {
@@ -76,7 +78,7 @@ export default {
 				return;
 			}
 			
-			const journeyResults = await fetchData("http://localhost:8000/api/v1/journeys", {
+			const journeyResults = await fetchData(`${host}/api/v1/journeys`, {
 				fromStation: inputs.from,
 				toStation: inputs.to
 			});
@@ -118,7 +120,7 @@ export default {
 				return;
 			}
 
-			const suggestions = await this.fetchData("http://localhost:8000/api/v1/stations", {
+			const suggestions = await this.fetchData(`${host}/api/v1/stations`, {
 				stationName: input,
 				countryCode: "NL"
 			});
@@ -145,12 +147,12 @@ export default {
 			}
 		},
 		async toRoom(id) {
-			const room = await this.fetchData("http://localhost:8000/api/v1/room", {
+			const room = await this.fetchData(`${host}/api/v1/room`, {
 				journeyId: id
 			});
 
 			if (!room) {
-				const response = await axios.post("http://localhost:8000/api/v1/room", {
+				const response = await axios.post(`${host}/api/v1/room`, {
 					journeyId: id
 				});
 
