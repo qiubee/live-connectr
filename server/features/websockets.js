@@ -29,6 +29,7 @@ module.exports = function (server) {
 			});
 			message.user = user;
 			delete message.userId;
+			// socket.to(message.roomId).emit("new message", message);
 			socket.emit("new message", message);
 		});
 
@@ -57,7 +58,6 @@ module.exports = function (server) {
 				return message;
 			});
 
-			// socket.to(room.name).emit("messages", messages);
 			socket.emit("messages", messages);
 		});
 
