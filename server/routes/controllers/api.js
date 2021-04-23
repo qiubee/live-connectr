@@ -83,8 +83,8 @@ async function searchJourney(req, res) {
 			message: "Bad Request"
 		});
 	} else if (apiResponse.status === 404) {
-		return res.status(400).json({
-			status: 400,
+		return res.status(404).json({
+			status: 404,
 			message: "Journey not found"
 		});
 	}
@@ -129,7 +129,7 @@ function getAllRooms(req, res) {
 	}
 }
 
-function addRoom(req, res) {
+async function addRoom(req, res) {
 	const journeyId = req.body.journeyId;
 	if (!journeyId && typeof journeyId !== "number") {
 		return res.status(400).json({
@@ -137,18 +137,173 @@ function addRoom(req, res) {
 			message: "Could not handle request due to incorrect data"
 		});
 	}
-	const totalRooms = db.getAll("rooms").length;
-	const newRoom = {
-		journeyId: journeyId,
-		chatId: totalRooms + 1,
-		users: [],
-		game: { active: false }
-	};
-	db.insertOne("rooms", newRoom);
-	return res.json({
-		status: 200,
-		message: "Room created"
+
+	const duplicate = db.getOne("rooms", function (room) {
+		return room.journeyId === journeyId;
 	});
+
+	if (duplicate) {
+		return res.status(400).json({
+			status: 400,
+			message: "Room already exists"
+		});
+	}
+
+	// const apiResponse = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/journey", {
+	// 	params: {
+	// 		train: journeyId
+	// 	},
+	// 	headers: {
+	// 		"Authorization": `Primary-${apiToken}`,
+	// 		"Ocp-Apim-Subscription-Key": apiToken
+	// 	}
+	// });
+
+	// test sample
+	const apiResponse = {status: 200, data: db.getAll("testjourneydetail")};
+
+	if (apiResponse.status === 200) {
+		const data = apiResponse.data.payload;
+
+		const [origin, destination] = data.stops.filter(function (stop) {
+			return stop.status === "ORIGIN" || stop.status === "DESTINATION";
+		}).map(function (place) {
+			const data = {
+				name: place.stop.name,
+				countryCode: place.stop.countryCode,
+				uicCode: place.stop.uicCode,
+				stationCode: place.id.split("_")[0],
+			};
+
+			if (place.status === "ORIGIN") {
+				data.departureDateTime = place.departures[0].actualTime;
+			} else if (place.status === "DESTINATION") {
+				data.arrivalDateTime = place.arrivals[0].actualTime;
+			}
+
+			return data;
+		});
+
+
+		const stops = data.stops.filter(function (stop) {
+			return stop.status !== "PASSING" && 
+				stop.status !== "ORIGIN" &&
+				stop.status !== "DESTINATION";
+		}).map(function (stop) {
+			return {
+				name: stop.stop.name,
+				countryCode: stop.stop.countryCode,
+				uicCode: stop.stop.uicCode,
+				stationCode: stop.id.split("_")[0],
+				arrivalDateTime: stop.arrivals[0].actualTime,
+				departureDateTime: stop.departures[0].actualTime,
+			};
+		});
+
+		const routeStations = data.stops.map(function (station) {
+			return {
+				name: station.stop.name,
+				uicCode: station.stop.uicCode,
+				stationCode: station.id.split("_")[0],
+			};
+		});
+
+		stops.map(function (stop, index, self) {
+			const nextStop = self[index + 1];
+			const previousStop = self[index - 1];
+			if (index === 0) {
+				const tailIndex = routeStations.findIndex(function (station) {
+					return station.uicCode === stop.uicCode;
+				});
+				const passingStations = routeStations.slice(1, tailIndex).filter(function (station) {
+					return station.uicCode !== stop.uicCode;
+				});
+				const nextStation = routeStations.find(function (station) {
+					return station.uicCode === nextStop.uicCode;
+				});
+				stop.passedStations = passingStations;
+				stop.nextStop = nextStation;
+				return stop;
+			}
+
+			if (!nextStop) {
+				const headIndex = routeStations.findIndex(function (station) {
+					return station.uicCode === stop.uicCode;
+				});
+				const passingStations = routeStations.slice(headIndex, -1).filter(function (station) {
+					return station.uicCode !== stop.uicCode;
+				});
+				const nextStation = routeStations[routeStations.length - 1];
+				stop.passedStations = passingStations;
+				stop.nextStop = nextStation;
+				return stop;
+			}
+
+			const headIndex = routeStations.findIndex(function (station) {
+				return station.uicCode === previousStop.uicCode;
+			});
+
+			const tailIndex = routeStations.findIndex(function (station) {
+				return station.uicCode === stop.uicCode;
+			});
+
+			const passingStations = routeStations.slice(headIndex, tailIndex).filter(function (station) {
+				return station.uicCode !== stop.uicCode && station.uicCode !== previousStop.uicCode;
+			});
+			const nextStation = routeStations.find(function (station) {
+				return station.uicCode === nextStop.uicCode;
+			});
+
+			stop.passedStations = passingStations;
+			stop.nextStop = nextStation;
+			return stop;
+		});
+
+		const type = {
+			name: data.stops[0].departures[0].product.categoryCode,
+			fullName: data.stops[0].departures[0].product.longCategoryName
+		};
+
+		const operator = data.stops[0].departures[0].product.operatorName;
+
+		const journeyData = {
+			origin: origin,
+			stops: stops,
+			destination: destination,
+			journeyId: journeyId,
+			type: type,
+			operator: operator,
+			delayInSeconds: 0,
+			cancelled: false,
+		};
+
+		db.insertOne("journeys", journeyData);
+
+		const totalRooms = db.getAll("rooms").length;
+		const newRoom = {
+			created: new Date().toUTCString(),
+			updated: new Date().toUTCString(),
+			journeyId: journeyId,
+			chatId: totalRooms + 1,
+			users: [],
+			game: { active: false }
+		};
+		db.insertOne("rooms", newRoom);
+		return res.json({
+			status: 200,
+			message: "Room created"
+		});
+	} else if (apiResponse.status === 400) {
+		return res.status(400).json({
+			status: 400,
+			message: "Could not process request due to incorrect parameters"
+		});
+	} else if (apiResponse.status === 404) {
+		return res.status(404).json({
+			status: 404,
+			message: "Journey not found"
+		});
+	}
 }
 
 function getStations(req, res) {
