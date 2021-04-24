@@ -43,7 +43,10 @@
 <script>
 import { post, get } from "axios";
 import Journey from "@/components/Journey.vue";
-const host = location.origin.replace("5000", "8000");
+
+const host = process.env.NODE_ENV === "production" ? 
+	location.origin : 
+	location.origin.replace("5000", "8000");
 
 export default {
 	name: "SearchJourney",
