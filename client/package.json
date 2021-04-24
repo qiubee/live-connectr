@@ -5,7 +5,6 @@
 	"scripts": {
 		"preserve": "npm run lint",
 		"serve": "webpack serve --config webpack.dev.js",
-		"prebuild": "del ./dist",
 		"build": "webpack --config webpack.prod.js",
 		"lint": "eslint \"src/*.js\" --fix --ignore-pattern node_modules/"
 	},
@@ -26,7 +25,6 @@
 		"clean-webpack-plugin": "^4.0.0-alpha.0",
 		"css-loader": "^5.2.1",
 		"css-minimizer-webpack-plugin": "^2.0.0",
-		"del-cli": "^3.0.1",
 		"eslint": "^7.24.0",
 		"eslint-plugin-vue": "^7.9.0",
 		"html-webpack-plugin": "^5.3.1",
