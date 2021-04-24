@@ -24,14 +24,11 @@ const routes = [
 	}, {
 		path: "/over-zugo",
 		name: "Over",
-		// route level code-splitting
-		// this generates a separate chunk (about.[hash].js) for this route
-		// which is lazy-loaded when the route is visited.
-		component: () => import(/* webpackChunkName: "over" */ "../views/Over.vue")
+		component: () => import(/* webpackChunkName: "over" */ "@/views/Over.vue")
 	}, {
 		path: "/reis/:id",
 		name: "Journey",
-		component: () => import(/* webpackChunkName: "journey" */ "../views/Journey.vue"),
+		component: () => import(/* webpackChunkName: "journey" */ "@/views/Journey.vue"),
 		props: {
 			socket: socket
 		}
