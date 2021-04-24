@@ -14,12 +14,12 @@ module.exports = {
 				exclude: /node_modules/,
 				include: path.resolve(__dirname, "src"),
 				use: {
-					loader: "babel-loader",
-				},
+					loader: "babel-loader"
+				}
 			},
 			{
 				test: /\.vue$/,
-				loader: "vue-loader",
+				loader: "vue-loader"
 			},
 			{
 				test: /\.(png|svg|jpg|jpeg|gif)$/i,
@@ -51,7 +51,7 @@ module.exports = {
 			vue: "@vue/runtime-dom",
 			"@": path.resolve(__dirname, "src")
 		},
-		extensions: ["*", ".js", ".vue", ".json"],
+		extensions: ["*", ".js", ".vue", ".json"]
 	},
 	output: {
 		filename: "js/[name].[chunkhash].js",

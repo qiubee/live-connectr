@@ -10,13 +10,13 @@ module.exports = merge(common, {
 			{
 				test: /\.css$/,
 				use: [MiniCssExtractPlugin.loader, "css-loader"]
-			},
+			}
 		]
 	},
 	plugins: [
 		new MiniCssExtractPlugin({
 			filename: "/css/index.css"
-		}),
+		})
 	],
 	optimization: {
 		minimize: true,
