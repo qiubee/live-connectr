@@ -15,7 +15,7 @@ module.exports = merge(common, {
 	},
 	plugins: [
 		new MiniCssExtractPlugin({
-			filename: "/css/index.css"
+			filename: "css/index.css"
 		})
 	],
 	optimization: {
