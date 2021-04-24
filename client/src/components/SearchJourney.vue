@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import { post, get } from "axios";
 import Journey from "@/components/Journey.vue";
 const host = location.origin.replace("5000", "8000");
 
@@ -96,9 +96,9 @@ export default {
 		async fetchData(url, params = null) {
 			try {
 				if (params) {
-					return await (await axios.get(url, { params: params })).data;
+					return await (await get(url, { params: params })).data;
 				} else {
-					return await (await axios.get(url)).data;
+					return await (await get(url)).data;
 				}
 			} catch (error) {
 				if (error.response.status >= 400 && error.response.status < 500) {
@@ -152,7 +152,7 @@ export default {
 			});
 
 			if (!room) {
-				const response = await axios.post(`${host}/api/v1/room`, {
+				const response = await post(`${host}/api/v1/room`, {
 					journeyId: id
 				});
 
