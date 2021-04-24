@@ -2,8 +2,10 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "@/views/Home.vue";
 import io from "socket.io-client";
 
-// const host = location.origin.replace(/^http/, "ws");
-const socket = io("http://localhost:8000");
+const host = process.env.NODE_ENV === "production" ? 
+	location.origin.replace(/^http/, "ws") : 
+	location.origin.replace("5000", "8000");
+const socket = io(host);
 
 socket.on("connect", function () {
 	console.log("connected");
