@@ -28,7 +28,6 @@ module.exports = {
 		]
 	},
 	"ignorePatterns": [
-		"webpack.config.js",
 		".eslintrc.js",
 		"babel.config.js"
 	]
