@@ -6,6 +6,7 @@
 		"preserve": "npm run lint",
 		"serve": "webpack serve --config webpack.dev.js",
 		"build": "webpack --config webpack.prod.js",
+		"postbuild": "rimraf ../server/public/* && cp -r ./dist/* ../server/public",
 		"lint": "eslint \"src/*.js\" --fix --ignore-pattern node_modules/"
 	},
 	"author": "qiubee",
@@ -29,6 +30,7 @@
 		"eslint-plugin-vue": "^7.9.0",
 		"html-webpack-plugin": "^5.3.1",
 		"mini-css-extract-plugin": "^1.4.1",
+		"rimraf": "^3.0.2",
 		"style-loader": "^2.0.0",
 		"vue-loader": "^16.2.0",
 		"vue-template-compiler": "^2.6.12",
