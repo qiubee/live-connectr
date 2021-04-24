@@ -44,7 +44,7 @@ npm run dev
 # To run client in the development environment
 npm run serve
 
-# To build client app
+# To build client app & copy to public folder on the server
 npm run build
 
 # To lint files
