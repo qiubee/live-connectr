@@ -1,19 +1,23 @@
 <template>
 	<main class="room">
 		<div v-if="joined">
-			<Chat :socket="socket"/>
+			<Chat :socket="socket" :room="room" :user="user"/>
 		</div>
-		<form v-else action="">
+		<form @submit.prevent="joinRoom()" v-else action="">
 			<h1>Wat is je naam?</h1>
 			<span v-if="empty" class="empty_text_field">Voer eerst je naam in</span>
-			<input type="text">
-			<button @click="joinRoom()">Ga naar chat</button>
+			<input v-model="name" type="text">
+			<button>Ga naar chat</button>
 		</form>
 	</main>
 </template>
 
 <script>
 import Chat from "@/components/Chat.vue";
+import { get, post } from "@/helpers/fetch.js";
+const host = process.env.NODE_ENV === "production" ? 
+	location.origin : 
+	location.origin.replace("5000", "8000");
 
 export default {
 	name: "Room",
@@ -21,14 +25,23 @@ export default {
 		Chat
 	},
 	props: {
-		room: Object,
 		socket: Object
 	},
 	data() {
 		return {
+			room: Object,
+			user: Object,
 			joined: false,
-			empty: false
+			empty: false,
+			name: ""
 		};
+	},
+	async mounted() {
+		const journeyId = this.$route.params.id;
+		const room = await get(`${host}/api/v1/room`, {
+			journeyId: journeyId
+		});
+		this.room = room;
 	},
 	watch: {
 		joined: function (newValue) {
@@ -40,20 +53,34 @@ export default {
 		}
 	},
 	methods: {
-		joinRoom() {
-			const vm = this;
-			const form = document.querySelector(".room > form");
-			const input = document.querySelector(".room > form input");
+		async joinRoom() {
+			const name = this.name;
+			const roomId = this.room.id;
+			const formButton = document.querySelector(".room form button");
 
-			form.addEventListener("submit", function (event) {
-				event.preventDefault();
-				if (input.value === "") {
-					vm.empty = true;
-					return;
+			if (name === "") {
+				this.empty = true;
+				return;
+			} else {
+				formButton.setAttribute("disabled", "disabled");
+				const response = await post(`${host}/api/v1/user`, {
+					name,
+					roomId
+				});
+				if (response.status === 200 || response.status === 201) {
+					const user = await get(`${host}/api/v1/user`, {
+						name: name
+					});
+					if (!user) {
+						formButton.removeAttribute("disabled");
+					} else {
+						this.user = user;
+						this.joined = true;
+					}
+				} else if (response.status === 400) {
+					formButton.removeAttribute("disabled");
 				}
-				// TODO: add user to room & save in LocalStorage
-				vm.joined = true;
-			});
+			}
 		}
 	}
 };
