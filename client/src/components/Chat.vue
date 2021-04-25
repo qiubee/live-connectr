@@ -37,6 +37,7 @@ export default {
 	},
 	props: {
 		socket: Object,
+		room: Object,
 		user: Object
 	},
 	data() {
@@ -47,11 +48,8 @@ export default {
 	mounted() {
 		const socket = this.socket;
 		const vm = this;
-		const roomId = 1;
-		const user = {
-			id: 1,
-			name: "Chantal"
-		};
+		const room = this.room;
+		const user = this.user;
 
 		const form = document.querySelector(".chat_footer form");
 		const input = document.querySelector(".chat_footer form input");
@@ -61,8 +59,8 @@ export default {
 				return;
 			}
 			const message = {
-				roomId: roomId,
-				userId: user.id,
+				roomId: room.id,
+				userName: user.id,
 				message: input.value,
 				datetime: new Date().toUTCString()
 			};
