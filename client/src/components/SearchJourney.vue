@@ -41,8 +41,8 @@
 </template>
 
 <script>
-import { post, get } from "axios";
 import Journey from "@/components/Journey.vue";
+import { get, post } from "@/helpers/fetch.js";
 
 const host = process.env.NODE_ENV === "production" ? 
 	location.origin : 
@@ -63,7 +63,6 @@ export default {
 		};
 	},
 	mounted() {
-		const fetchData = this.fetchData;
 		const form = document.querySelector(".search form");
 		const vm = this;
 
@@ -81,7 +80,7 @@ export default {
 				return;
 			}
 			
-			const journeyResults = await fetchData(`${host}/api/v1/journeys`, {
+			const journeyResults = await get(`${host}/api/v1/journeys`, {
 				fromStation: inputs.from,
 				toStation: inputs.to
 			});
@@ -96,21 +95,6 @@ export default {
 		
 	},
 	methods: {
-		async fetchData(url, params = null) {
-			try {
-				if (params) {
-					return await (await get(url, { params: params })).data;
-				} else {
-					return await (await get(url)).data;
-				}
-			} catch (error) {
-				if (error.response.status >= 400 && error.response.status < 500) {
-					console.error(error.response.status + " " + error.response.data.message);
-				} else {
-					console.error(error);
-				}
-			}
-		},
 		async giveSearchOptions(event) {
 			const node = event.target;
 			const input = node.value.replace(/[0-9<>`'"$!@#$%^&*()\]\\/[]/g, "");
@@ -123,7 +107,7 @@ export default {
 				return;
 			}
 
-			const suggestions = await this.fetchData(`${host}/api/v1/stations`, {
+			const suggestions = await get(`${host}/api/v1/stations`, {
 				stationName: input,
 				countryCode: "NL"
 			});
@@ -150,7 +134,7 @@ export default {
 			}
 		},
 		async toRoom(id) {
-			const room = await this.fetchData(`${host}/api/v1/room`, {
+			const room = await get(`${host}/api/v1/room`, {
 				journeyId: id
 			});
 
@@ -159,11 +143,11 @@ export default {
 					journeyId: id
 				});
 
-				if (response.status === 200) {
-					this.$router.push(`/reis/${id}`);
+				if (response.status === 201) {
+					this.$router.push({name: "Journey", params: {id}});
 				}
 			} else {
-				this.$router.push(`/reis/${id}`);
+				this.$router.push({name: "Journey", params: {id}});
 			}
 		}
 	}
