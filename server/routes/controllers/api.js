@@ -10,6 +10,70 @@ function getJourneyInfo(req, res) {
 	// res.json(data);
 }
 
+function getUser(req, res) {
+	const userName = req.query.name;
+
+	if (typeof userName !== "string") {
+		return res.status(400).json({
+			status: 400,
+			message: "Incorrect data type"
+		});
+	}
+
+	const user = db.getOne("users", function (user) {
+		return user.name === userName;
+	});
+	
+	if (user) {
+		delete user.id;
+		return res.json(user);
+	} else {
+		return res.status(404).json({
+			status: 404,
+			message: "User not found"
+		});
+	}
+}
+
+function addUser(req, res) {
+	const data = req.body;
+	if (!data.name || !data.roomId) {
+		return res.status(400).json({
+			status: 400,
+			message: "Incorrect data to process request"
+		});
+	}
+	const foundUser = db.getAll("users").find(function (user) {
+		return user.name === data.name;
+	});
+
+	if (foundUser) {
+		if (!foundUser.inRooms.includes(data.roomId)) {
+			db.update("users", function (user) {
+				return user === data.name;
+			}, function (user) {
+				user.rooms.push(data.roomId);
+				return user;
+			});
+		} 	
+		return res.json({
+			status: 200,
+			message: "User information updated"
+		});
+	} else {
+		const user = {
+			name: data.name,
+			inRooms: [data.roomId]
+		};
+
+		db.insertOne("users", user);
+		return res.json({
+			status: 201,
+			message: "User added"
+		});
+	}
+}
+
 async function searchJourney(req, res) {
 	const query = req.query;
 
@@ -290,7 +354,7 @@ async function addRoom(req, res) {
 		};
 		db.insertOne("rooms", newRoom);
 		return res.json({
-			status: 200,
+			status: 201,
 			message: "Room created"
 		});
 	} else if (apiResponse.status === 400) {
@@ -405,6 +469,8 @@ exports.getJourneyInfo = getJourneyInfo;
 exports.getJourneys = searchJourney;
 exports.getTrainInfo = getTrainInfo;
 exports.getStations = getStations;
+exports.getUser = getUser;
 exports.getRoom = getRoom;
 exports.getAllRooms = getAllRooms;
+exports.postUser = addUser;
 exports.postRoom = addRoom;
