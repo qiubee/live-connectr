@@ -8,6 +8,8 @@ router.get("/api/v1/journeyDetail", api.getJourneyInfo)
 	.get("/api/v1/trainDetail", api.getTrainInfo)
 	.get("/api/v1/allRooms", api.getAllRooms)
 	.get("/api/v1/room", api.getRoom)
-	.post("/api/v1/room", api.postRoom);
+	.get("/api/v1/user", api.getUser)
+	.post("/api/v1/room", api.postRoom)
+	.post("/api/v1/user", api.postUser);
 
 module.exports = router;
