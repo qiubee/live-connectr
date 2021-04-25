@@ -15,6 +15,9 @@ app.use(express.static("public"))
 	.use(express.urlencoded({extended: true})) // get data from http body
 	.use(express.json())
 	.use("/", cors({origin: "http://localhost:5000"}), router)
+	.use(function (req, res) {
+		res.redirect("/");
+	})
 	.disable("x-powered-by");
 
 // socket implementation
