@@ -38,9 +38,12 @@ function deleteMany(name, query) {
 	addToDatabase(name, newCollection);
 }
 
-function update(name, filterQuery, updateQuery) {
+function updateOne(name, filterQuery, updateQuery) {
 	const collection = readFromDatabase(name);
-	const newCollection = collection.map(filterQuery, updateQuery);
+	const index = collection.findIndex(filterQuery);
+	const item = [collection.find(filterQuery)];
+	const updatedItem = item.map(updateQuery)[0];
+	const newCollection = collection.slice(index, 1, updatedItem);
 	addToDatabase(name, newCollection);
 }
 
@@ -55,7 +58,7 @@ function getMany(name, filterQuery) {
 exports.insertOne = insertOne;
 exports.deleteOne = deleteOne;
 exports.deleteMany = deleteMany;
-exports.update = update;
+exports.updateOne = updateOne;
 exports.getOne = getOne;
 exports.getMany = getMany;
 exports.getAll = readFromDatabase;
