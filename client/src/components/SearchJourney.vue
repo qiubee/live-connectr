@@ -80,12 +80,12 @@ export default {
 				return;
 			}
 			
-			const journeyResults = await get(`${host}/api/v1/journeys`, {
+			const journeys = await get(`${host}/api/v1/journeys`, {
 				fromStation: inputs.from,
 				toStation: inputs.to
 			});
-			if (journeyResults) {
-				vm.journeys = journeyResults;
+			if (journeys.status === 200) {
+				vm.journeys = journeys.data;
 			} else {
 				vm.noJourneys = true;
 			}
@@ -107,13 +107,12 @@ export default {
 				return;
 			}
 
-			const suggestions = await get(`${host}/api/v1/stations`, {
+			const stations = await get(`${host}/api/v1/stations`, {
 				stationName: input,
 				countryCode: "NL"
 			});
-
-			if (suggestions) {
-				this.suggestions = suggestions; 
+			if (stations.status === 200) {
+				this.suggestions = stations.data; 
 			}
 		},
 		showSuggestions(event) {
@@ -137,13 +136,13 @@ export default {
 			const room = await get(`${host}/api/v1/room`, {
 				journeyId: id
 			});
-
-			if (!room) {
-				const response = await post(`${host}/api/v1/room`, {
+			
+			if (room.status === 404) {
+				const addedRoom = await post(`${host}/api/v1/room`, {
 					journeyId: id
 				});
 
-				if (response.status === 201) {
+				if (addedRoom.status === 201) {
 					this.$router.push({name: "Journey", params: {id}});
 				}
 			} else {
