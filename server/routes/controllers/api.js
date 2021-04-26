@@ -5,15 +5,32 @@ require("dotenv").config();
 const apiToken = process.env.NS_API_KEY;
 
 function getJourneyInfo(req, res) {
-	const query = req.query;
-	console.log(query);
-	// res.json(data);
+	if (/^[0-9]{1,}$/g.test(req.query.journeyId) === false) {
+		return res.status(400).json({
+			status: 400,
+			message: "Could not handle request due to incorrect data type"
+		});
+	}
+
+	const journeyId = Number(req.query.journeyId);
+	const journeyData = db.getOne("journeys", function (journey) {
+		return journey.journeyId === journeyId;
+	});
+	
+	if (journeyData) {
+		return res.json(journeyData);
+	} else {
+		return res.status(404).json({
+			status: 404,
+			message: "Journey not found"
+		});
+	}
 }
 
 function getUser(req, res) {
 	const userName = req.query.name;
 
-	if (typeof userName !== "string") {
+	if (/^[0-9a-zA-Z]{1,}$/g.test(req.query.journeyId) === false) {
 		return res.status(400).json({
 			status: 400,
 			message: "Incorrect data type"
@@ -25,7 +42,6 @@ function getUser(req, res) {
 	});
 	
 	if (user) {
-		delete user.id;
 		return res.json(user);
 	} else {
 		return res.status(404).json({
@@ -67,7 +83,7 @@ function addUser(req, res) {
 		};
 
 		db.insertOne("users", user);
-		return res.json({
+		return res.status(201).json({
 			status: 201,
 			message: "User added"
 		});
@@ -158,13 +174,13 @@ function getTrainInfo(req, res) {
 }
 
 function getRoom(req, res) {
-	const journeyId = Number(req.query.journeyId);
-	if (!journeyId || typeof journeyId !== "number") {
+	if (/^[0-9]{1,}$/g.test(req.query.journeyId) === false) {
 		return res.status(400).json({
 			status: 400,
-			message: "Invalid parameter"
+			message: "Could not handle request due to incorrect data type"
 		});
 	} 
+	const journeyId = Number(req.query.journeyId);
 
 	const room = db.getOne("rooms", function (room) {
 		return room.journeyId === journeyId;
@@ -194,22 +210,22 @@ function getAllRooms(req, res) {
 }
 
 async function addRoom(req, res) {
-	const journeyId = req.body.journeyId;
-	if (!journeyId && typeof journeyId !== "number") {
+	if (/^[0-9]{1,}$/g.test(req.body.journeyId) === false) {
 		return res.status(400).json({
 			status: 400,
-			message: "Could not handle request due to incorrect data"
+			message: "Could not handle request due to incorrect data type"
 		});
 	}
+	const journeyId = Number(req.body.journeyId);
 
 	const duplicate = db.getOne("rooms", function (room) {
 		return room.journeyId === journeyId;
 	});
 
 	if (duplicate) {
-		return res.status(400).json({
-			status: 400,
-			message: "Room already exists"
+		return res.json({
+			status: 200,
+			message: "Room updated"
 		});
 	}
 
@@ -247,7 +263,6 @@ async function addRoom(req, res) {
 
 			return data;
 		});
-
 
 		const stops = data.stops.filter(function (stop) {
 			return stop.status !== "PASSING" && 
@@ -353,7 +368,7 @@ async function addRoom(req, res) {
 			game: { active: false }
 		};
 		db.insertOne("rooms", newRoom);
-		return res.json({
+		return res.status(201).json({
 			status: 201,
 			message: "Room created"
 		});
@@ -371,10 +386,11 @@ async function addRoom(req, res) {
 }
 
 function getStations(req, res) {
+	const data = req.query;
 	const allStations = db.getAll("stations");
-	if (req.query) {
-		if (req.query.length === 1 && req.query.countryCode) {
-			const countryCode = req.query.countryCode;
+	if (data) {
+		if (!data.stationName && data.countryCode) {
+			const countryCode = data.countryCode;
 			const allCountrycodes = allStations.reduce(function (arr, next) {
 				if (arr.indexOf(next.countryCode) < 0) {
 					arr.push(next.countryCode);
@@ -385,35 +401,50 @@ function getStations(req, res) {
 			if (!correctCode) {
 				return res.status(400).json({
 					status: 400,
-					message: "Unkown parameter value"
+					message: "Unkown country code"
 				});
 			}
 			const response = allStations.filter(function (station) {
 				return station.countryCode === countryCode;
 			});
 			return res.json(response);
-		} else if (req.query.stationName) {
-			const stationName = req.query.stationName;
+		} else if (data.stationName.length >= 1) {
+			const stationName = data.stationName;
 			if (!/[a-z A-z]/g.test(stationName)) {
 				return res.status(400).json({
 					status: 400,
-					message: "Bad Request"
+					message: "Incorrect station name"
 				});
 			}
 			const regex = new RegExp(`^${stationName}`, "gi");
 			const results = allStations.filter(function (station) {
-				if (req.query.countryCode) {
-					const code = req.query.countryCode;
-					return station.name.match(regex) && station.countryCode === code;
+				if (data.countryCode) {
+					const countryCode = data.countryCode;
+					const allCountrycodes = allStations.reduce(function (arr, next) {
+						if (arr.indexOf(next.countryCode) < 0) {
+						arr.push(next.countryCode);
+						}
+						return arr;
+					}, []);
+					const correctCode = allCountrycodes.indexOf(countryCode) >= 0 ? true : false;
+					if (!correctCode) {
+						return res.status(400).json({
+							status: 400,
+							message: "Unkown country code"
+						});
+					}
+					return station.name.match(regex) && station.countryCode === countryCode;
 				} else {
 					return station.name.match(regex);
 				}
 			}).reduce(function (arr, next) {
-				arr.push(next.name);
-				if (next.alternateNames) {
-					next.alternateNames.map(function (name) {
-						arr.push(name);
-					});
+				if (next.name) {
+					arr.push(next.name);
+					if (next.alternateNames) {
+						next.alternateNames.map(function (name) {
+							arr.push(name);
+						});
+					}
 				}
 				return arr;
 			}, []);
@@ -424,10 +455,17 @@ function getStations(req, res) {
 					message: "Station not found"
 				});
 			}
-			
-			const response = results.length > 5 ? filterRandom(results, 5) : results;
-
-			return res.json(response);
+			if (data.totalResults && /^[0-9]{0,4}$/g.test(data.totalResults)) {
+				if (results.length <= data.totalResults) {
+					return res.json(results);
+				} else {
+					const response = results.slice(0, data.totalResults);
+					return res.json(response);
+				}
+			} else {
+				const response = results.length > 5 ? filterRandom(results, 5) : results;
+				return res.json(response);
+			}
 		}
 	} else {
 		return res.json(allStations); 
