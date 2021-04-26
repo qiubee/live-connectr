@@ -60,7 +60,8 @@ export default {
 			}
 			const message = {
 				roomId: room.id,
-				userName: user.id,
+				roomName: room.journeyId,
+				userId: user.id,
 				message: input.value,
 				datetime: new Date().toUTCString()
 			};
