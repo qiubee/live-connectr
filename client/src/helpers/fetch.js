@@ -2,9 +2,9 @@ import { get as aGet, post as aPost } from "axios";
 async function get(url, params = null) {
 	try {
 		if (params) {
-			return await (await aGet(url, { params: params })).data;
+			return await (await aGet(url, { params: params }));
 		} else {
-			return await (await aGet(url)).data;
+			return await (await aGet(url));
 		}
 	} catch (error) {
 		if (error.response.status >= 400 && error.response.status < 500) {
