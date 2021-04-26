@@ -1,7 +1,5 @@
 <template>
-	<div class="journey_live">
-		<Room :socket="socket"/>
-	</div>
+	<Room :socket="socket"/>
 </template>
 
 <script>
