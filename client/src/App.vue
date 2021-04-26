@@ -3,7 +3,6 @@
 		<nav>
 			<router-link to="/">Home</router-link>
 			<router-link to="/over-zugo">Over Zugo</router-link>
-			<router-link to="/reis/1">Reis</router-link>
 		</nav>
 	</header>
 	<router-view/>
