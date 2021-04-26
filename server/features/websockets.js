@@ -11,6 +11,7 @@ module.exports = function (server) {
 		}
 	});
 	const clients = [];
+	const rooms = [];
 	io.on("connection", function (socket) {
 		// add client to clients list
 		clients.push({
@@ -18,25 +19,73 @@ module.exports = function (server) {
 		});
 		console.log("client connected",`(total: ${clients.length})`);
 
-		socket.on("join room", function (room) {
-			socket.join(room);
+		socket.on("join room", function (data) {
+			const room = data.room;
+			const user = data.user;
+
+			if (room.journeyId) {
+				const journeyId = "" + room.journeyId;
+				const joined = db.getOne("rooms", function (item) {
+					return item.id === room.id;
+				}).users.includes(user.id);
+
+				if (joined) {
+					socket.join(journeyId);
+					socket.emit("join room", {
+						joined: true
+					});
+				} else {
+					db.updateOne("rooms", function (item) {
+						return item.id === room.id;
+					}, function (item) {
+						item.users.push(user.id);
+						return item;
+					});
+					socket.join(journeyId);
+					
+					socket.emit("join room", {
+						joined: true
+					});
+				}
+
+				const roomIndex = rooms.findIndex(function (item) {
+					return item.name === journeyId;
+				});
+
+				if (roomIndex >= 0) {
+					rooms[roomIndex].members.push(socket.id);
+					console.log(`client joined room: ${rooms[roomIndex].name} (total members: ${rooms[roomIndex].members.length})`);
+				} else {
+					rooms.push({
+						name: journeyId,
+						members: [socket.id]
+					});
+					console.log(`room ${journeyId} created`,`(total rooms: ${rooms.length})`);
+				}
+			}
 		});
 
-		socket.on("add message", function (message) {
-			db.insertOne("messages", message);
+		socket.on("add message", function (newMessage) {
+			const message = newMessage;
+			const roomName = "" + newMessage.roomName;
+			delete newMessage.roomName;
+			db.insertOne("messages", newMessage);
 			const user = db.getOne("users", function (user) {
-				return user.id === message.userId;
+				return user.id === newMessage.userId;
 			});
+
 			message.user = user;
 			delete message.userId;
-			// socket.to(message.roomId).emit("new message", message);
+			delete message.roomName;
+
+			socket.to(roomName).emit("new message", message);
 			socket.emit("new message", message);
 		});
 
-		socket.on("messages", function (roomId) {
+		socket.on("messages", function (roomData) {
 			// find users of room
 			const roomMembers = db.getOne("rooms", function (room) {
-				return room.id === roomId;
+				return room.id === roomData.id;
 			}).users;
 			const users = db.getMany("users", function (user) {
 				for (const userId of roomMembers) {
@@ -48,7 +97,7 @@ module.exports = function (server) {
 
 			// retrieve messages from users in room
 			const messages = db.getMany("messages", function (message) {
-				return message.roomId === roomId;
+				return message.roomId === roomData.id;
 			}).map(function (message) {
 				const user = users.find(function (user) {
 					return user.id === message.userId;
@@ -80,14 +129,40 @@ module.exports = function (server) {
 			clients.splice(clients.findIndex(function (client) {
 				return client.id === socket.id;
 			}, 1));
-			console.log("client disconnected", `(left: ${clients.length})`);
+			if (clients.length >= 0) {
+				console.log("client disconnected", `(total: ${clients.length})`);
+			} else {
+				console.log("client disconnected", "(no clients connected)");
+			}
+
+			// remove client from room
+			if (rooms.length >= 1) {
+				const roomIndex = rooms.findIndex(function (room) {
+					return room.members.includes(socket.id);
+				});
+								
+				if (roomIndex >= 0) {
+					const memberIndex = rooms[roomIndex].members.findIndex(function (member) {
+						return member === socket.id;
+					});
+					rooms[roomIndex].members.splice(memberIndex, 1);
+					if (rooms[roomIndex].members.length >= 1) {
+						console.log(`client left room ${rooms[roomIndex].name} (total members: ${rooms[roomIndex].members.length})`);
+					} else {
+						console.log(`client left room ${rooms[roomIndex].name} & room has closed`);
+					}
+				}
+			}
 		});
 	});
 };
 
 function collectRooms() {
 	const allRooms = db.getAll("rooms");
-	const allJourneys = db.getAll("journeys");
+	if (!allRooms || allRooms.length < 0) {
+		return [];
+	}
+ 	const allJourneys = db.getAll("journeys");
 	const rooms = allRooms.map(function (room) {
 		const journey = allJourneys.find(function (journey) {
 			return journey.journeyId === room.journeyId;
