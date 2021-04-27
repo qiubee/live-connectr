@@ -10,15 +10,19 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 8000;
 
-// use public folder for static files
-app.use(express.static("public"))
+app.use(express.static("public")) // use public folder for static files
 	.use(express.urlencoded({extended: true})) // get data from http body
-	.use(express.json())
-	.use("/", cors({origin: "http://localhost:5000"}), router)
+	.use(express.json()) // parse json body
+	.use("/", router) // use router
 	.use(function (req, res) {
-		res.redirect("/");
+		res.redirect("/"); // redirect to home  on 404
 	})
 	.disable("x-powered-by");
+
+if (process.env.NODE_ENV === "development") {
+	// allow localhost origin in development
+	app.use(cors({origin: "http://localhost:5000"}));
+}
 
 // socket implementation
 socket(server); 
