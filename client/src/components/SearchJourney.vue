@@ -101,18 +101,19 @@ export default {
 			
 			if (input.length < 2) {
 				this.suggestions = [];
+				return;
 			}
 
 			if (input.length % 2 === 1 || input[input.length - 1] === " ") {
 				return;
-			}
-
-			const stations = await get(`${host}/api/v1/stations`, {
-				stationName: input,
-				countryCode: "NL"
-			});
-			if (stations.status === 200) {
-				this.suggestions = stations.data; 
+			} else {
+				const stations = await get(`${host}/api/v1/stations`, {
+					stationName: input,
+					countryCode: "NL"
+				});
+				if (stations.status === 200) {
+					this.suggestions = stations.data; 
+				}
 			}
 		},
 		showSuggestions(event) {
