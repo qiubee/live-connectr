@@ -1,7 +1,9 @@
 <template>
 	<div class="message" :class="{sender: user.sender}">
-		<p>{{message}}</p>
-		<div>
+		<div class="content">
+			<p>{{message}}</p>
+		</div>
+		<div class="info">
 			<span v-if="!user.sender">{{user.name}}</span>
 			<span>
 				<time v-bind:datetime="datetime">{{timeString}}</time>
@@ -34,6 +36,16 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.message {
+	max-width: 15rem;
+	margin-bottom: 1rem;
+}
 
+.message .content {
+	padding: 0.5rem 0 0.5rem 0.75rem;
+	border-radius: 0.75rem;
+	background-color: #7593ec;
+	color: white;
+}
 </style>
