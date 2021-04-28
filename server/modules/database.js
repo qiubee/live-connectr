@@ -24,17 +24,9 @@ function insertOne(name, data) {
 	addToDatabase(name, collection);
 }
 
-function deleteOne(name, data) {
+function deleteMany(name, filterQuery) {
 	const collection = readFromDatabase(name);
-	const newCollection = collection.filter(function (item) {
-		return item !== data;
-	});
-	addToDatabase(name, newCollection);
-}
-
-function deleteMany(name, query) {
-	const collection = readFromDatabase(name);
-	const newCollection = collection.filter(query);
+	const newCollection = collection.filter(filterQuery);
 	addToDatabase(name, newCollection);
 }
 
@@ -47,6 +39,12 @@ function updateOne(name, filterQuery, updateQuery) {
 	addToDatabase(name, newCollection);
 }
 
+function updateMany(name, updateQuery) {
+	const collection = readFromDatabase(name);
+	const newCollection = collection.map(updateQuery);
+	addToDatabase(name, newCollection);
+}
+
 function getOne(name, filterQuery) {
 	return readFromDatabase(name).find(filterQuery);
 }
@@ -56,9 +54,9 @@ function getMany(name, filterQuery) {
 }
 
 exports.insertOne = insertOne;
-exports.deleteOne = deleteOne;
-exports.deleteMany = deleteMany;
+exports.delete = deleteMany;
 exports.updateOne = updateOne;
+exports.updateMany = updateMany;
 exports.getOne = getOne;
 exports.getMany = getMany;
 exports.getAll = readFromDatabase;
