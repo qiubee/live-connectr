@@ -229,7 +229,7 @@ async function addRoom(req, res) {
 		});
 	}
 
-	// const apiResponse = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/journey", {
+	// const journeyAPIresponse = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/journey", {
 	// 	params: {
 	// 		train: journeyId
 	// 	},
@@ -239,13 +239,22 @@ async function addRoom(req, res) {
 	// 	}
 	// });
 
+	// const trainAPIresponse = await fetch(`https://gateway.apiportal.ns.nl/virtual-train-api/api/v1/trein/${journeyId}`, {
+	// 	headers: {
+	// 		"Authorization": `Primary-${apiToken}`,
+	// 		"Ocp-Apim-Subscription-Key": apiToken
+	// 	}
+	// });
+
 	// test sample
-	const apiResponse = {status: 200, data: db.getAll("testjourneydetail")};
+	const journeyAPIresponse = {status: 200, data: db.getAll("testjourneydetail")};
 
-	if (apiResponse.status === 200) {
-		const data = apiResponse.data.payload;
+	const trainAPIresponse = {status: 200, data: db.getAll("testtrain")};
 
-		const [origin, destination] = data.stops.filter(function (stop) {
+	if (journeyAPIresponse.status === 200) {
+		const journey = journeyAPIresponse.data.payload;
+
+		const [origin, destination] = journey.stops.filter(function (stop) {
 			return stop.status === "ORIGIN" || stop.status === "DESTINATION";
 		}).map(function (place) {
 			const data = {
@@ -264,7 +273,7 @@ async function addRoom(req, res) {
 			return data;
 		});
 
-		const stops = data.stops.filter(function (stop) {
+		const stops = journey.stops.filter(function (stop) {
 			return stop.status !== "PASSING" && 
 				stop.status !== "ORIGIN" &&
 				stop.status !== "DESTINATION";
@@ -279,7 +288,7 @@ async function addRoom(req, res) {
 			};
 		});
 
-		const routeStations = data.stops.map(function (station) {
+		const routeStations = journey.stops.map(function (station) {
 			return {
 				name: station.stop.name,
 				uicCode: station.stop.uicCode,
@@ -339,11 +348,11 @@ async function addRoom(req, res) {
 		});
 
 		const type = {
-			name: data.stops[0].departures[0].product.categoryCode,
-			fullName: data.stops[0].departures[0].product.longCategoryName
+			name: journey.stops[0].departures[0].product.categoryCode,
+			fullName: journey.stops[0].departures[0].product.longCategoryName
 		};
 
-		const operator = data.stops[0].departures[0].product.operatorName;
+		const operator = journey.stops[0].departures[0].product.operatorName;
 
 		const journeyData = {
 			origin: origin,
@@ -355,6 +364,34 @@ async function addRoom(req, res) {
 			delayInSeconds: 0,
 			cancelled: false,
 		};
+
+		if (trainAPIresponse.status === 200) {
+			const train = trainAPIresponse.data;
+
+			const parts = train.materieeldelen.map(function (part) {
+				const partsImages = part.bakken.map(function (car) {
+					return car.afbeelding.url;
+				});
+
+				return {
+					trainNumber: part.materieelnummer,
+					type: part.type,
+					trainImage: part.afbeelding,
+					carsImages: partsImages
+				};
+			});
+
+			const trainData = {
+				type: train.type,
+				parts: parts,
+				station: train.station,
+				shortened: train.ingekort,
+				operator: train.vervoerder,
+				track: train.spoor,
+				length: train.lengte
+			};
+			journeyData.train = trainData;
+		}
 
 		db.insertOne("journeys", journeyData);
 
@@ -372,12 +409,12 @@ async function addRoom(req, res) {
 			status: 201,
 			message: "Room created"
 		});
-	} else if (apiResponse.status === 400) {
+	} else if (journeyAPIresponse.status === 400) {
 		return res.status(400).json({
 			status: 400,
 			message: "Could not process request due to incorrect parameters"
 		});
-	} else if (apiResponse.status === 404) {
+	} else if (journeyAPIresponse.status === 404) {
 		return res.status(404).json({
 			status: 404,
 			message: "Journey not found"
