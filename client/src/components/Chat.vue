@@ -110,6 +110,16 @@ form button {
 	height: 50vh;
 }
 
+.chat_conversation ul {
+	display: flex;
+	flex-direction: column;
+	justify-content: left;
+}
+
+.chat_conversation li.sender {
+	margin-left: auto;
+}
+
 .empty {
 	position: relative;
 	height: 45vh;
