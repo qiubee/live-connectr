@@ -1,26 +1,24 @@
 <template>
-	<div class="search">
+	<div class="search_journey">
 		<h2>Waar ga jij heen vandaag?</h2>
-		<form action="">
-			<label><span>Van</span><input @input="giveSearchOptions" @focus="showSuggestions" @blur="hideSuggestions" type="text" name="from"></label>
-			<div v-if="suggestOrigin" class="suggestions">
-				<ul>
-					<li v-for="option in suggestions" :key="option">
-						<span>{{option}}</span>
-					</li>
-				</ul>
+		<form @submit="searchJourneys" action="">
+			<div class="inputs">
+				<label><span>Van</span><input @input="giveSearchOptions" @focus="showSuggestions" type="text" name="from"></label>
+				<div v-if="suggestOrigin && suggestions.length >= 1" class="suggestions">
+					<ul>
+						<li @click="setStation" @keyup.enter="setStation" v-for="station in suggestions" :key="station.id" tabindex="0" >{{station.name}}</li>
+					</ul>
+				</div>
+				<label><span>Naar</span><input @input="giveSearchOptions" @focus="showSuggestions" type="text" name="to"></label>
+				<div v-if="suggestDestination && suggestions.length >= 1" class="suggestions">
+					<ul>
+						<li @click="setStation" @keyup.enter="setStation" v-for="station in suggestions" :key="station.id" tabindex="0">{{station.name}}</li>
+					</ul>
+				</div>
 			</div>
-			<label><span>Naar</span><input @input="giveSearchOptions" @focus="showSuggestions" @blur="hideSuggestions" type="text" name="to"></label>
-			<div v-if="suggestDestination" class="suggestions">
-				<ul>
-					<li v-for="option in suggestions" :key="option">
-						<span>{{option}}</span>
-					</li>
-				</ul>
-			</div>
-			<button>Zoek reis</button>
+			<button @focus="hideSuggestions" class="button">Zoek reis</button>
 		</form>
-		<div v-if="!noJourneys" class="results">
+		<div v-if="journeys.length >= 1" class="results">
 			<ul>
 				<li class="result" v-for="journey in journeys" :key="journey.id">
 					<Journey @click="toRoom(journey.id)"
@@ -33,7 +31,7 @@
 				</li>
 			</ul>
 		</div>
-		<div v-else class="no_results">
+		<div v-if="noJourneysFound" class="no_results">
 			<p>Reis niet gevonden.</p>
 		</div>
 	</div>
@@ -55,21 +53,19 @@ export default {
 	data() {
 		return {
 			journeys: [],
-			noJourneys: false,
+			noJourneysFound: false,
 			suggestions: Array,
 			suggestOrigin: false,
 			suggestDestination: false,
 		};
 	},
-	mounted() {
-		const form = document.querySelector(".search form");
-		const vm = this;
-
-		form.addEventListener("submit", async function (event) {
-			const inputs = Array.from(form.children).filter(function (node) {
-				return node.control;
+	methods: {
+		async searchJourneys(event) {
+			const formNode = event.target;
+			const inputs = Array.from(formNode.elements).filter(function (node) {
+				return node.localName === "input";
 			}).map(function (node) {
-				return { [node.control.name]: node.control.value };
+				return { [node.name]: node.value };
 			}).reduce(function (arr, input) {
 				return Object.assign(arr, input);
 			}, {});
@@ -78,22 +74,23 @@ export default {
 			if (!inputs.from || !inputs.to ) {
 				return;
 			}
-			
+
 			const journeys = await get(`${host}/api/v1/journeys`, {
 				fromStation: inputs.from,
 				toStation: inputs.to
 			});
+
 			if (journeys.status === 200) {
-				vm.journeys = journeys.data;
+				if (journeys.data.length === 0) {
+					this.noJourneysFound = true;
+				}
+				this.journeys = journeys.data;
 			} else {
-				vm.noJourneys = true;
+				this.noJourneysFound = true;
 			}
 
 			return false;
-		});
-		
-	},
-	methods: {
+		},
 		async giveSearchOptions(event) {
 			const node = event.target;
 			const input = node.value.replace(/[0-9<>`'"$!@#$%^&*()\]\\/[]/g, "");
@@ -111,7 +108,12 @@ export default {
 					countryCode: "NL"
 				});
 				if (stations.status === 200) {
-					this.suggestions = stations.data; 
+					this.suggestions = stations.data.map(function (station, index) {
+						return {
+							id: index,
+							name: station
+						};
+					}); 
 				}
 			}
 		},
@@ -120,15 +122,25 @@ export default {
 			this.suggestions = [];
 			if (inputName === "from") {
 				this.suggestOrigin = true;
+				this.suggestDestination = false;
 			} else if (inputName === "to") {
 				this.suggestDestination = true;
+				this.suggestOrigin = false;
 			}
 		},
-		hideSuggestions(event) {
-			const inputName = event.target.attributes.name.nodeValue;
-			if (inputName === "from") {
+		hideSuggestions() {
+			this.suggestOrigin = false;
+			this.suggestDestination = false;
+		},
+		setStation(event) {
+			const node = event.target;
+			const station = node.textContent;
+			const inputNode = event.target.parentElement.parentElement.previousElementSibling.control;
+			inputNode.value = station;
+
+			if (inputNode.name === "from") {
 				this.suggestOrigin = false;
-			} else if (inputName === "to") {
+			} else if (inputNode.name === "to") {
 				this.suggestDestination = false;
 			}
 		},
@@ -154,30 +166,56 @@ export default {
 </script>
 
 <style scoped>
-.search form {
+h2, form, .results {
+	margin: 2rem 0;
+}
+
+h2 {
+	text-align: center;
+	color: #38034d
+}
+
+form {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	max-width: 20rem;
 }
 
-.search form label {
+.inputs label {
 	display: flex;
-	margin: 0.5rem 0;
 	flex-direction: column;
 }
 
-.search form label span {
-	font-weight: 500;
+.inputs label:not(:first-child) {
+	margin-top: 1.5rem;
 }
 
-.search form label input {
+form label span {
+	color: #270535;
+	font-weight: 500;
+	margin-bottom: 0.25rem;
+}
+
+form label input {
 	min-width: 15rem;
 }
 
-.search form button {
+form button {
 	min-width: 8rem;
+	margin: 2.5rem auto 1.5rem auto;
+	background-color: #1770f7;
+	font-weight: 500;
+}
+
+.results ul {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-content: center;
+}
+
+.results li:not(:first-child) {
 	margin-top: 1rem;
 }
 
@@ -191,5 +229,28 @@ export default {
 	cursor: pointer;
 	transform: translateY(-0.25em);
 	filter: drop-shadow(0em 0.25em 0.25em rgba(3, 25, 53, 0.2));
+}
+
+.suggestions {
+	position: absolute;
+	min-width: 15.6rem;
+	background-color: #fffafa;
+	border: 0.2rem solid #4189ec;
+	border-radius: 0.25rem 0.25rem 0.4rem 0.4rem;
+}
+
+.suggestions li {
+	padding: 0.5rem 0.3rem;
+	font-weight: 500;
+}
+
+.suggestions li:not(:last-child) {
+	border-bottom: 0.1rem solid rgb(107, 140, 248);
+}
+
+.suggestions li:hover, .suggestions li:focus {
+	cursor: pointer;
+	background-color: #4189ec;
+	color: white;
 }
 </style>
