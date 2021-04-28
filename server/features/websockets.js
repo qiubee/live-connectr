@@ -184,7 +184,7 @@ module.exports = function (server) {
 						});
 						db.delete("journeys", function (journey) {
 							return journey.journeyId !== journeyId;
-						})
+						});
 						console.log(`client left room ${rooms[roomIndex].name} & room has closed`);
 					}
 				}
