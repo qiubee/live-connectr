@@ -11,12 +11,13 @@
 		</ul>
 		<div>
 			<p>Zit jouw reis er niet bij?</p>
-			<router-link to="/zoek-reis">Zoek reis</router-link>
+			<router-link class="button" to="/zoek-reis">Zoek reis</router-link>
 		</div>
 	</div>
 	<div class="no_rooms" v-else>
-			<p>Er zijn op dit moment geen personen die reizen. Zoek jouw eigen reis en speel mini-games totdat anderen meereizen.</p>
-			<router-link to="/zoek-reis">Zoek reis</router-link>
+			<p>Er zijn op dit moment geen personen die reizen.</p>
+			<p>Zoek jouw eigen reis en speel mini-games totdat anderen meereizen.</p>
+			<router-link class="button" to="/zoek-reis">Zoek reis</router-link>
 		</div>
 </template>
 
@@ -57,5 +58,18 @@ export default {
 <style scoped>
 .all_rooms .room:hover {
 	cursor: pointer;
+}
+
+.no_rooms {
+	text-align: center;
+}
+
+.no_rooms p:first-child {
+	font-weight: 500;
+	margin-bottom: 2rem;
+}
+
+.no_rooms p {
+	margin-bottom: 1rem;
 }
 </style>
