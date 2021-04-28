@@ -5,7 +5,7 @@
 			<div>
 				<div class="category">
 					<span class="type" v-if="altTypeName">{{altTypeName}}</span>
-					<span class="type" v-else>{{type.name}}</span>
+					<span class="type" v-else>{{type}}</span>
 					<span class="operator" :class="operator.toLowerCase()"></span>
 				</div>
 				<span class="departuretime">{{departureTime}}</span>
@@ -27,12 +27,11 @@ import { getTime } from "@/helpers/time.js";
 export default {
 	name: "Journey",
 	props: {
-		id: Number,
 		operator: String,
 		destination: String,
 		departure: String,
 		stops: Array,
-		type: Object
+		type: String
 	},
 	data() {
 		return {
@@ -46,7 +45,7 @@ export default {
 		const departure = this.departure;
 		const type = this.type;
 
-		if (type.name === "ICD") {
+		if (type === "ICD") {
 			this.altTypeName = "IC Direct";
 		}
 
