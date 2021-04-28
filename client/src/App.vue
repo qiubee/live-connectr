@@ -27,6 +27,21 @@
     src: url("assets/fonts/tommy-soft-black.otf") format("opentype");
 }
 
+html, body, #app {
+	height: 100%;
+}
+
+#app {
+    margin: 0 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+}
+
+#app > div {
+    margin: auto;
+}
+
 body, body * {
 	margin: 0;
     padding: 0;
@@ -45,20 +60,23 @@ a {
 	text-decoration: none;
 }
 
-header nav {
-	padding: 30px;
+.button {
+	display: inline-block;
+	background-color: #1d78ee;
+    min-width: 5rem;
+	color: white;
+	padding: 0.5rem 1rem;
+	border-radius: 0.25rem;
+    text-align: center;
 }
 
-header nav a {
-	font-weight: bold;
-	color: #2c3e50;
+button {
+    border: none;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
-header nav a:not(:last-child) {
-    margin-right: 0.5rem;
-}
-
-header nav a.router-link-exact-active {
-	color: #42b983;
+button:hover {
+    cursor: pointer;
 }
 </style>
