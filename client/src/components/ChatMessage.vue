@@ -4,7 +4,7 @@
 			<p>{{message}}</p>
 		</div>
 		<div class="info">
-			<span v-if="!user.sender">{{user.name}}</span>
+			<span class="user" v-if="!user.sender">{{user.name}}</span>
 			<span>
 				<time v-bind:datetime="datetime">{{timeString}}</time>
 			</span>
@@ -42,8 +42,24 @@ export default {
 	margin-bottom: 1rem;
 }
 
+.sender {
+	margin-left: auto;
+}
+
+.info {
+	font-size: 0.9rem;
+}
+
+.info .user {
+	font-weight: 500;
+}
+
+.info .user::after {
+	content: " - "
+}
+
 .message .content {
-	padding: 0.5rem 0 0.5rem 0.75rem;
+	padding: 0.5rem 0.75rem;
 	border-radius: 0.75rem;
 	background-color: #7593ec;
 	color: white;
