@@ -74,10 +74,7 @@ export default {
 
 <style scoped>
 .journey {
-	max-width: 22.5rem;
-	width: 100%;
 	padding: 0.5rem 0.5rem;
-	margin: 1rem 0;
 	border: 0.1rem solid #2372cc;
 	border-radius: 0.4rem;
 	background-color: white;
