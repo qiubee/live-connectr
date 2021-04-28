@@ -24,9 +24,12 @@ const routes = [
 			socket: socket
 		}
 	}, {
-		path: "/over-zugo",
-		name: "Over",
-		component: () => import(/* webpackChunkName: "over" */ "@/views/Over.vue")
+		path: "/zoek-reis",
+		name: "Search",
+		component: () => import(/* webpackChunkName: "search" */ "@/views/Search.vue"),
+		props: {
+			socket: socket
+		}
 	}, {
 		path: "/reis/:id",
 		name: "Journey",
