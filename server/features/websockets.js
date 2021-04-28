@@ -57,8 +57,13 @@ module.exports = function (server) {
 					console.log(`client joined room: ${rooms[roomIndex].name} (total members: ${rooms[roomIndex].members.length})`);
 				} else {
 					rooms.push({
+						id: room.id,
+						journeyId: room.journeyId,
 						name: journeyId,
-						members: [socket.id]
+						members: [{
+							socketId: socket.id,
+							userId: user.id
+						}]
 					});
 					console.log(`room ${journeyId} created`,`(total rooms: ${rooms.length})`);
 				}
@@ -135,20 +140,51 @@ module.exports = function (server) {
 				console.log("client disconnected", "(no clients connected)");
 			}
 
-			// remove client from room
+			// remove client
 			if (rooms.length >= 1) {
 				const roomIndex = rooms.findIndex(function (room) {
-					return room.members.includes(socket.id);
+					const user = room.members.findIndex(function (member) {
+						return member.socketId === socket.id;
+					});
+					return user >= 0;
 				});
 								
 				if (roomIndex >= 0) {
 					const memberIndex = rooms[roomIndex].members.findIndex(function (member) {
-						return member === socket.id;
+						return member.socketId === socket.id;
 					});
+					
+					// remove user from room
+					const oldUser = rooms[roomIndex].members[memberIndex];
+
+					db.updateMany("rooms", function (room) {
+						const userIndex = room.users.indexOf(oldUser.userId);
+						if (userIndex >=0) {
+							room.users.splice(userIndex, 1);
+						}
+						return room;
+					});
+
+					db.delete("users", function (user) {
+						return user.id !== oldUser.userId;
+					});
+					
 					rooms[roomIndex].members.splice(memberIndex, 1);
 					if (rooms[roomIndex].members.length >= 1) {
 						console.log(`client left room ${rooms[roomIndex].name} (total members: ${rooms[roomIndex].members.length})`);
 					} else {
+						// delete room, journey & room messages from database
+						const roomId = rooms[roomIndex].id;
+						const journeyId = rooms[roomIndex].journeyId;
+						db.delete("rooms", function (room) {
+							return room.id !== roomId;
+						});
+						db.delete("messages", function (message) {
+							return message.roomId !== roomId;
+						});
+						db.delete("journeys", function (journey) {
+							return journey.journeyId !== journeyId;
+						})
 						console.log(`client left room ${rooms[roomIndex].name} & room has closed`);
 					}
 				}
@@ -172,13 +208,12 @@ function collectRooms() {
 			return stop.name;
 		});
 
-		room.journey = {
-			destination: journey.destination.name,
-			stops: stops,
-			delayInSeconds: journey.delayInSeconds,
-			journeyId: journey.journeyId,
-			cancelled: journey.cancelled
-		};
+		journey.stops = stops;
+		journey.destination = journey.destination.name;
+		journey.origin = journey.origin.name;
+		delete journey.id;
+
+		room.journey = journey;
 		
 		delete room.journeyId;
 		delete room.chatId;
