@@ -223,6 +223,7 @@ form button {
 	max-width: 22.5rem;
 	background-color: white;
 	transition: all 0.15s ease;
+	border-radius: 0.4rem;
 }
 
 .results .result:hover {
