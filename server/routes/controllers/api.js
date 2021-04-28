@@ -93,20 +93,17 @@ function addUser(req, res) {
 async function searchJourney(req, res) {
 	const query = req.query;
 
-	// const apiResponse = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips", {
-	// 	params: query,
-	// 	headers: {
-	// 		"Authorization": `Primary-${apiToken}`,
-	// 		"Ocp-Apim-Subscription-Key": apiToken
-	// 	}
-	// });
-
-	// test sample
-	const apiResponse = {status: 200, data: db.getAll("testjourneys3")};
-
+	const apiResponse = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips", {
+		params: query,
+		headers: {
+			"Authorization": `Primary-${apiToken}`,
+			"Ocp-Apim-Subscription-Key": apiToken
+		}
+	});
+	
 	if (apiResponse.status === 200) {
 		const data = apiResponse.data;
-	
+
 		const journeys = data.trips.map(function (journey) {
 			const uicCodes = journey.uid.split("|").filter(function (item) {
 				return /Station/g.test(item);
@@ -119,14 +116,12 @@ async function searchJourney(req, res) {
 				return Object.assign(arr, item);
 			}, {});
 		
-			return journey.legs
-			.filter(function (route) {
-				return route.origin.actualDateTime;
-			})
-			.map(function (route) {
-				const stops = route.stops.filter(function (stop) {
-						return stop.uicCode !== uicCodes.fromStation && stop.uicCode !== uicCodes.toStation && stop.name !== route.direction;
-					}).flat().filter(function (stop) {
+			return journey.legs.filter(function (route) {
+					return route.origin.plannedDateTime;
+				}).map(function (route) {
+					const stops = route.stops.filter(function (stop) {
+							return stop.uicCode !== uicCodes.fromStation && stop.uicCode !== uicCodes.toStation && stop.name !== route.direction;
+						}).flat().filter(function (stop) {
 					return !stop.passing && !stop.cancelled;
 				}).map(function (stop) {
 					return {
@@ -141,7 +136,7 @@ async function searchJourney(req, res) {
 					name: route.product.shortCategoryName,
 					fullName: route.product.longCategoryName
 				};
-			
+				
 				return {
 					id: Number(route.product.number),
 					destination: route.direction,
@@ -229,27 +224,22 @@ async function addRoom(req, res) {
 		});
 	}
 
-	// const journeyAPIresponse = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/journey", {
-	// 	params: {
-	// 		train: journeyId
-	// 	},
-	// 	headers: {
-	// 		"Authorization": `Primary-${apiToken}`,
-	// 		"Ocp-Apim-Subscription-Key": apiToken
-	// 	}
-	// });
+	const journeyAPIresponse = await fetch("https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/journey", {
+		params: {
+			train: journeyId
+		},
+		headers: {
+			"Authorization": `Primary-${apiToken}`,
+			"Ocp-Apim-Subscription-Key": apiToken
+		}
+	});
 
-	// const trainAPIresponse = await fetch(`https://gateway.apiportal.ns.nl/virtual-train-api/api/v1/trein/${journeyId}`, {
-	// 	headers: {
-	// 		"Authorization": `Primary-${apiToken}`,
-	// 		"Ocp-Apim-Subscription-Key": apiToken
-	// 	}
-	// });
-
-	// test sample
-	const journeyAPIresponse = {status: 200, data: db.getAll("testjourneydetail")};
-
-	const trainAPIresponse = {status: 200, data: db.getAll("testtrain")};
+	const trainAPIresponse = await fetch(`https://gateway.apiportal.ns.nl/virtual-train-api/api/v1/trein/${journeyId}`, {
+		headers: {
+			"Authorization": `Primary-${apiToken}`,
+			"Ocp-Apim-Subscription-Key": apiToken
+		}
+	});
 
 	if (journeyAPIresponse.status === 200) {
 		const journey = journeyAPIresponse.data.payload;
