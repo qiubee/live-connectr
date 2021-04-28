@@ -30,10 +30,10 @@ module.exports = function (server) {
 				}).users.includes(user.id);
 
 				if (joined) {
-					socket.join(journeyId);
 					socket.emit("join room", {
 						joined: true
 					});
+					return;
 				} else {
 					db.updateOne("rooms", function (item) {
 						return item.id === room.id;
@@ -53,7 +53,10 @@ module.exports = function (server) {
 				});
 
 				if (roomIndex >= 0) {
-					rooms[roomIndex].members.push(socket.id);
+					rooms[roomIndex].members.push({
+						socketId: socket.id,
+						userId: user.id
+					});
 					console.log(`client joined room: ${rooms[roomIndex].name} (total members: ${rooms[roomIndex].members.length})`);
 				} else {
 					rooms.push({
@@ -148,12 +151,11 @@ module.exports = function (server) {
 					});
 					return user >= 0;
 				});
-								
 				if (roomIndex >= 0) {
 					const memberIndex = rooms[roomIndex].members.findIndex(function (member) {
 						return member.socketId === socket.id;
 					});
-					
+
 					// remove user from room
 					const oldUser = rooms[roomIndex].members[memberIndex];
 
@@ -176,6 +178,7 @@ module.exports = function (server) {
 						// delete room, journey & room messages from database
 						const roomId = rooms[roomIndex].id;
 						const journeyId = rooms[roomIndex].journeyId;
+
 						db.delete("rooms", function (room) {
 							return room.id !== roomId;
 						});
@@ -184,6 +187,10 @@ module.exports = function (server) {
 						});
 						db.delete("journeys", function (journey) {
 							return journey.journeyId !== journeyId;
+						});
+
+						rooms.filter(function (room) {
+							return room.id !== roomId;
 						});
 						console.log(`client left room ${rooms[roomIndex].name} & room has closed`);
 					}
