@@ -1,5 +1,7 @@
 <template>
-	<Room :socket="socket"/>
+	<div class="journey_room">
+		<Room :socket="socket"/>
+	</div>
 </template>
 
 <script>
