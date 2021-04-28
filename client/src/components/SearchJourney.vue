@@ -23,13 +23,12 @@
 		<div v-if="!noJourneys" class="results">
 			<ul>
 				<li class="result" v-for="journey in journeys" :key="journey.id">
-					<Journey  @click="toRoom(journey.id)"
-						:id="journey.id"
+					<Journey @click="toRoom(journey.id)"
 						:operator="journey.operator"
 						:destination="journey.destination"
 						:departure="journey.departureTime"
 						:stops="journey.stops"
-						:type="journey.type"
+						:type="journey.type.name"
 					/>
 				</li>
 			</ul>
