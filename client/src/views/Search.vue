@@ -1,5 +1,7 @@
 <template>
+	<div class="search">
 	<SearchJourney :socket="socket"/>
+	</div>
 </template>
 
 <script>
@@ -15,7 +17,3 @@ export default {
 	}
 };
 </script>
-
-<style>
-
-</style>
