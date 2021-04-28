@@ -15,14 +15,14 @@
 			<h1>Wat is je naam?</h1>
 			<span v-if="empty" class="empty_text_field">Voer eerst je naam in</span>
 			<input v-model="name" type="text">
-			<button>Ga naar chat</button>
+			<button class="button">Ga naar chat</button>
 		</form>
 	</div>
 </template>
 
 <script>
 import Chat from "@/components/Chat.vue";
-import GeneralJourneyInfo from "@/components/GeneralJourneyInfo.vue";
+// import GeneralJourneyInfo from "@/components/GeneralJourneyInfo.vue";
 import { get, post } from "@/helpers/fetch.js";
 import { checkInSessionStorage, getFromSessionStorage, addToSessionStorage } from "@/helpers/storage.js";
 const host = process.env.NODE_ENV === "production" ? 
@@ -32,8 +32,7 @@ const host = process.env.NODE_ENV === "production" ?
 export default {
 	name: "Room",
 	components: {
-		Chat,
-		GeneralJourneyInfo
+		Chat
 	},
 	props: {
 		socket: Object
@@ -121,6 +120,21 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+button {
+	margin: 1.5rem auto;
+	font-weight: 500;
+}
 
+form {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-content: center;
+}
+
+form h1 {
+	text-align: center;
+	margin-bottom: 4rem;
+}
 </style>
