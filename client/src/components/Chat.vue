@@ -3,7 +3,7 @@
 	<div class="chat_header">
 
 	</div>
-	<div class="chat_conversation" v-if="messages.length === 0">
+	<div class="chat_conversation empty" v-if="messages.length === 0">
 		<p>Tijd voor een nieuwe reis en een gezellig gesprek!</p>
 	</div>
 	<div class="chat_conversation" v-else>
@@ -21,7 +21,7 @@
 	<div class="chat_footer">
 		<form action="">
 			<input type="text">
-			<button>Verstuur</button>
+			<button class="button">Verstuur</button>
 		</form>
 	</div>
   </div>
@@ -93,5 +93,38 @@ export default {
 </script>
 
 <style scoped>
+form {
+	display: flex;
+	flex-direction: row;
+}
 
+form input {
+	max-width: 11.25rem;
+}
+
+form button {
+	margin-left: 0.75rem;
+}
+
+.chat {
+	height: 50vh;
+}
+
+.empty {
+	position: relative;
+	height: 45vh;
+}
+
+.empty p {
+	text-align: center;
+	font-weight: 500;
+	font-size: 1.25rem;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.button {
+	font-weight: 500;
+}
 </style>
