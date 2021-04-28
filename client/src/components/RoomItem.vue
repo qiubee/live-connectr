@@ -27,7 +27,7 @@
 				<span>{{game.type}}</span>
 			</div>
 		</div>
-		<div class="stops">
+		<div v-if="stops.length >= 1" class="stops">
 			via:
 			<ol>
 				<li v-for="stop in stops" :key="stop.id">
@@ -86,6 +86,10 @@ export default {
 </script>
 
 <style scoped>
+.train img {
+	font-size: 0;
+}
+
 .ns {
 	display: block;
 	background-size: contain;
