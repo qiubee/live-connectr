@@ -117,7 +117,7 @@ async function searchJourney(req, res) {
 			}, {});
 		
 			return journey.legs.filter(function (route) {
-					return route.origin.plannedDateTime;
+					return route.origin.actualDateTime;
 				}).map(function (route) {
 					const stops = route.stops.filter(function (stop) {
 							return stop.uicCode !== uicCodes.fromStation && stop.uicCode !== uicCodes.toStation && stop.name !== route.direction;
