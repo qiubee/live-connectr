@@ -359,16 +359,23 @@ async function addRoom(req, res) {
 			const train = trainAPIresponse.data;
 
 			const parts = train.materieeldelen.map(function (part) {
+				const trainInfo = {
+					trainNumber: part.materieelnummer,
+					type: part.type,
+					trainImage: part.afbeelding,	
+				};
 				const partsImages = part.bakken.map(function (car) {
 					return car.afbeelding.url;
 				});
 
-				return {
-					trainNumber: part.materieelnummer,
-					type: part.type,
-					trainImage: part.afbeelding,
-					carsImages: partsImages
-				};
+				trainInfo.carsImages = partsImages;
+
+				if (partsImages.length === 0) {
+					trainInfo.carsImages = [part.afbeelding];
+				}
+
+
+				return trainInfo;
 			});
 
 			const trainData = {
