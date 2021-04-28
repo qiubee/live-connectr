@@ -1,12 +1,10 @@
 <template>
 	<div class="home">
 		<RoomList :socket="socket"/>
-		<SearchJourney :socket="socket"/>
 	</div>
 </template>
 
 <script>
-import SearchJourney from "@/components/SearchJourney.vue";
 import RoomList from "@/components/RoomList.vue";
 
 export default {
@@ -16,7 +14,6 @@ export default {
 	},
 	components: {
 		RoomList,
-		SearchJourney
 	}
 };
 </script>
