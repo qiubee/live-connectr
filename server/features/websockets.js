@@ -202,7 +202,7 @@ module.exports = function (server) {
 
 function collectRooms() {
 	const allRooms = db.getAll("rooms");
-	if (!allRooms || allRooms.length < 0) {
+	if (!allRooms || allRooms.length < 1) {
 		return [];
 	}
  	const allJourneys = db.getAll("journeys");
